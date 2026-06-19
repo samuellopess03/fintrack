@@ -1,7 +1,7 @@
-# ADR-005 — Jest + @swc/jest como framework de testes
+# ADR-005 — Jest + ts-jest (diagnostics off) como framework de testes
 
 - **Status:** Aceito
-- **Data:** 2025
+- **Data:** 2025 (atualizado em 2026)
 - **Autores:** Time FinTrack
 
 ---
@@ -22,7 +22,8 @@ As opções avaliadas foram Jest (com ts-jest ou @swc/jest) e Vitest.
 
 ## Decisão
 
-Adotamos o **Jest** com **@swc/jest** como compilador TypeScript nos testes do backend.
+Adotamos o **Jest** com **ts-jest** (diagnostics desabilitado) como compilador
+TypeScript nos testes do backend.
 
 ---
 
@@ -43,11 +44,12 @@ O sistema de módulos mock do Jest (`jest.mock('amqplib')`) é mais granular
 e previsível do que as alternativas equivalentes no Vitest para módulos
 CommonJS/ESM mistos — que ainda é um ponto de fricção no ecossistema Node.js.
 
-### @swc/jest elimina o problema de performance do ts-jest
-O `ts-jest` compila TypeScript usando o compilador oficial `tsc`, o que
-é lento para suites grandes (type checking em cada arquivo de teste).
-O `@swc/jest` substitui a compilação pelo **SWC** (escrito em Rust),
-que faz apenas transpilação (sem type check) — 10 a 20x mais rápido.
+### ts-jest com diagnostics desabilitado = mesma performance do SWC
+O `ts-jest` compila TypeScript usando o compilador oficial `tsc`. Por padrão,
+ele faz type checking em cada arquivo de teste, o que é lento para suites
+grandes. Com a opção `diagnostics: false`, o type checking é **desabilitado**
+durante a execução dos testes — o `ts-jest` passa a fazer apenas transpilação,
+com performance equivalente ao `@swc/jest`.
 
 O type check continua sendo feito pelo `tsc --noEmit` como etapa separada
 no CI, garantindo segurança de tipos sem penalizar a velocidade dos testes.
@@ -62,6 +64,25 @@ soluções para casos específicos.
 O Jest roda cada arquivo de teste em um worker Node.js separado, com módulos
 completamente isolados. Para testes de integração que modificam estado no banco,
 esse isolamento evita interferências entre suites rodando em paralelo.
+
+---
+
+## Por que não @swc/jest
+
+O `@swc/jest` foi avaliado como substituto do `ts-jest` por sua compilação
+mais rápida (escrita em Rust). No entanto, ele **não suporta hoisting de
+`jest.mock()`** — um recurso fundamental para o padrão de mocks adotado
+no projeto.
+
+Sem o hoisting, as chamadas `jest.mock()` não são movidas para antes dos
+imports, fazendo com que os módulos sejam carregados antes de serem
+mockados. Isso quebra todos os testes que dependem de `jest.mock()`,
+que são a maioria dos testes unitários do backend.
+
+Para usar `@swc/jest`, seria necessário reescrever todos os testes para
+usar `jest.unstable_mockModule()` + dynamic imports — uma refatoração
+significativa que não se justifica dada a diferença marginal de performance
+para o tamanho atual da suíte de testes.
 
 ---
 
@@ -88,10 +109,13 @@ em uma decisão futura, sem conflito com o uso de Jest no backend.
 
 ## Alternativas rejeitadas
 
-### Jest + ts-jest (sem SWC)
-- Compilação lenta em suites grandes — `ts-jest` faz type checking em runtime.
-- A substituição pelo `@swc/jest` mantém todos os benefícios do Jest eliminando
-  o único problema relevante do setup padrão.
+### Jest + @swc/jest
+- Não suporta hoisting de `jest.mock()` — exige reescrita de todos os
+  testes para `jest.unstable_mockModule()`.
+- Performance marginalmente superior ao `ts-jest` com `diagnostics: false`,
+  sem ganho real para o tamanho atual da suíte.
+- A configuração de ESM com `@swc/jest` adiciona complexidade sem
+  benefício prático mensurável.
 
 ### Vitest (no backend)
 - Melhor para projetos Vite-first; edge cases ESM/CJS no Node.js backend.
@@ -102,8 +126,7 @@ em uma decisão futura, sem conflito com o uso de Jest no backend.
 
 ## Consequências
 
-- **Positivo:** Mocks maduros e previsíveis, compilação rápida via SWC, ecossistema robusto para backend Node.js.
+- **Positivo:** Mocks maduros e previsíveis com `jest.mock()`, ecossistema robusto para backend Node.js.
 - **Positivo:** Type checking separado do teste — CI roda `tsc` e `jest` em paralelo.
-- **Negativo:** Configuração inicial do `@swc/jest` com ESM requer atenção ao `jest.config.ts`.
+- **Positivo:** Compilação rápida via `diagnostics: false` — mesma performance do SWC sem abrir mão do `jest.mock()`.
 - **Negativo:** Dois frameworks de teste se o frontend adotar Vitest futuramente — custo de contexto switching.
-- **Risco mitigado:** A configuração do `@swc/jest` é bem documentada e o template do projeto já a inclui.

@@ -6,7 +6,7 @@
 |-----------------|--------|---------------------------------------------|
 | Node.js         | 24 LTS | Runtime                                     |
 | TypeScript      | 5.x    | Linguagem (strict mode)                     |
-| Fastify         | 4.x    | Framework HTTP                              |
+| Fastify         | 5.x    | Framework HTTP                              |
 | Drizzle ORM     | latest | Acesso ao banco de dados                    |
 | Zod             | 3.x    | Validação de schemas e inferência de tipos  |
 | Pino            | built-in Fastify | Logging estruturado em JSON     |
@@ -23,21 +23,13 @@ backend/
 │   ├── app.ts                    ← bootstrap do Fastify (sem iniciar servidor)
 │   ├── server.ts                 ← entrypoint: chama app.listen()
 │   │
-│   ├── config/
-│   │   └── env.ts                ← validação de variáveis de ambiente com Zod
-│   │
-│   ├── db/
-│   │   ├── client.ts             ← instância do Drizzle
-│   │   ├── schema/               ← definições de tabelas (ver SPEC-02)
-│   │   ├── migrations/           ← arquivos SQL gerados pelo Drizzle Kit
-│   │   └── seed.ts
-│   │
 │   ├── modules/                  ← cada módulo = um domínio de negócio
 │   │   ├── auth/
 │   │   │   ├── auth.routes.ts
 │   │   │   ├── auth.service.ts
 │   │   │   ├── auth.schema.ts    ← schemas Zod do módulo
-│   │   │   └── auth.test.ts
+│   │   │   ├── auth.unit.test.ts
+│   │   │   └── auth.int.test.ts
 │   │   ├── accounts/
 │   │   ├── categories/
 │   │   ├── transactions/
@@ -46,9 +38,19 @@ backend/
 │   │   └── rules/
 │   │
 │   ├── shared/
-│   │   ├── errors/               ← classes de erro tipadas
+│   │   ├── config/
+│   │   │   └── env.ts                ← validação Zod de variáveis de ambiente
+│   │   │
+│   │   ├── db/
+│   │   │   ├── client.ts             ← instância do Drizzle
+│   │   │   ├── schema/               ← definições de tabelas (ver SPEC-02)
+│   │   │   ├── migrations/           ← SQL puro gerado pelo Drizzle Kit
+│   │   │   ├── seed.ts
+│   │   │   └── reset.ts
+│   │   │
+│   │   ├── errors/               ← classes de erro tipadas (AppError, NotFoundError, etc.)
 │   │   ├── middlewares/          ← autenticação, rate limit
-│   │   ├── plugins/              ← plugins Fastify (redis, rabbitmq, auth)
+│   │   ├── plugins/              ← plugins Fastify (db, redis, rabbitmq, auth, swagger, zod, error-handler)
 │   │   └── utils/
 │   │
 │   └── worker/
@@ -109,18 +111,17 @@ export async function buildApp() {
   const app = Fastify({ logger: pinoConfig })
 
   // Plugins de infraestrutura
-  await app.register(import('./shared/plugins/db.plugin'))       // Drizzle
-  await app.register(import('./shared/plugins/redis.plugin'))    // Redis
-  await app.register(import('./shared/plugins/rabbitmq.plugin')) // RabbitMQ
-  await app.register(import('./shared/plugins/auth.plugin'))     // JWT
+  await app.register(import('./shared/plugins/db.plugin'))           // Drizzle
+  await app.register(import('./shared/plugins/redis.plugin'))        // Redis
+  await app.register(import('./shared/plugins/rabbitmq.plugin'))     // RabbitMQ
+  await app.register(import('./shared/plugins/auth.plugin'))         // JWT
+  await app.register(import('./shared/plugins/swagger.plugin'))      // OpenAPI /docs
+  await app.register(import('./shared/plugins/zod.plugin'))          // Zod type provider
+  await app.register(import('./shared/plugins/error-handler.plugin'))// Error handling
+  await app.register(import('./shared/plugins/meta.plugin'))         // Meta requestId
 
   // Rotas por módulo (com prefixo)
-  await app.register(import('./modules/auth/auth.routes'),         { prefix: '/auth' })
-  await app.register(import('./modules/accounts/accounts.routes'), { prefix: '/accounts' })
-  await app.register(import('./modules/transactions/transactions.routes'), { prefix: '/transactions' })
-  await app.register(import('./modules/imports/imports.routes'),   { prefix: '/imports' })
-  await app.register(import('./modules/reports/reports.routes'),   { prefix: '/reports' })
-  await app.register(import('./modules/rules/rules.routes'),       { prefix: '/rules' })
+  await app.register(import('./modules/auth/auth.routes'), { prefix: '/auth' })
 
   return app
 }
@@ -135,7 +136,7 @@ Se uma variável obrigatória estiver ausente ou inválida, o processo termina
 com uma mensagem clara — nunca sobe com configuração silenciosamente errada.
 
 ```typescript
-// src/config/env.ts
+// src/shared/config/env.ts
 import { z } from 'zod'
 
 const envSchema = z.object({
@@ -193,7 +194,7 @@ export class ConflictError extends AppError {
 ```
 
 ```typescript
-// src/app.ts — handler global
+// src/shared/plugins/error-handler.plugin.ts — handler global
 app.setErrorHandler((error, request, reply) => {
   if (error instanceof AppError) {
     return reply.status(error.statusCode).send({

@@ -15,23 +15,20 @@ e no **pipeline de importação** (integração completa do upload ao banco).
 ## Configuração
 
 ```typescript
-// jest.config.ts
-import type { Config } from 'jest'
-
-const config: Config = {
-  preset:             'ts-jest/presets/default-esm',
+// jest.config.mjs
+export default {
   testEnvironment:    'node',
+  roots:              ['<rootDir>/src'],
+  testMatch:          ['**/*.test.ts'],
   transform: {
-    '^.+\\.tsx?$': ['@swc/jest'],  // SWC para compilação rápida
+    '^.+\\.ts$': ['ts-jest', { useESM: true, tsconfig: 'tsconfig.json' }],
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  coverageThreshold: {
-    './src/worker/categorization/': { lines: 90 },  // regra de negócio core
-    './src/worker/parsers/':        { lines: 85 },
-  },
-  setupFilesAfterFramework: ['./src/test/setup.ts'],
+  setupFiles: ['<rootDir>/jest.setup.cjs'],
+  transformIgnorePatterns: ['node_modules/(?!(drizzle-orm|pg)/)'],
+  clearMocks: true,
 }
 ```
 
@@ -315,14 +312,14 @@ export async function seedUser(app: FastifyInstance): Promise<string> {
 ## Scripts de teste
 
 ```json
-// package.json
+// backend/package.json
 {
   "scripts": {
     "test":            "jest",
     "test:watch":      "jest --watch",
     "test:coverage":   "jest --coverage",
-    "test:unit":       "jest --testPathPattern=src/worker",
-    "test:integration":"jest --testPathPattern=integration"
+    "test:unit":       "jest --testPathPattern='\\.unit\\.test\\.ts$'",
+    "test:int":        "npx dotenv -e .env.test -- drizzle-kit migrate && jest --testPathPattern='\\.int\\.test\\.ts$'"
   }
 }
 ```
@@ -331,7 +328,7 @@ export async function seedUser(app: FastifyInstance): Promise<string> {
 
 ## Fixtures de teste
 
-Os arquivos de fixture em `__tests__/fixtures/` simulam extratos reais:
+Os arquivos de fixture em `src/test/fixtures/` simulam extratos reais (a criar):
 
 | Arquivo                         | Conteúdo                                              |
 |---------------------------------|-------------------------------------------------------|
