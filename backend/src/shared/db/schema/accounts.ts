@@ -8,9 +8,9 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { users } from "./users";
-import { transactions } from "./transactions";
-import type { AccountType } from "../enums";
+import { users } from "@/shared/db/schema/users";
+import { transactions } from "@/shared/db/schema/transactions";
+import type { AccountType } from "@/shared/db/enums";
 
 export const accounts = pgTable(
   "accounts",

@@ -10,9 +10,9 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { users } from "./users";
-import { categories } from "./categories";
-import type { RuleType } from "../enums";
+import { users } from "@/shared/db/schema/users";
+import { categories } from "@/shared/db/schema/categories";
+import type { RuleType } from "@/shared/db/enums";
 
 export const categorizationRules = pgTable(
   "categorization_rules",

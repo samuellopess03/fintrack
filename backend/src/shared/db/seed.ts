@@ -1,14 +1,12 @@
 import "dotenv/config";
-import { getDb } from "./client";
-import { users } from "./schema/users";
-import { categories, type NewCategory } from "./schema/categories";
-import { DEFAULT_CATEGORIES } from "./defaults";
+import { db } from "@/shared/db/client";
+import { users } from "@/shared/db/schema/users";
+import { categories, type NewCategory } from "@/shared/db/schema/categories";
+import { DEFAULT_CATEGORIES } from "@/shared/db/defaults";
 
 const DEV_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 async function seed() {
-  const db = getDb();
-
   console.log("Creating dev user...");
 
   await db

@@ -10,9 +10,9 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { users } from "./users";
-import { transactions } from "./transactions";
-import type { BudgetPeriod } from "../enums";
+import { users } from "@/shared/db/schema/users";
+import { transactions } from "@/shared/db/schema/transactions";
+import type { BudgetPeriod } from "@/shared/db/enums";
 
 export const categories = pgTable(
   "categories",

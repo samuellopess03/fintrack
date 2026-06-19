@@ -8,10 +8,10 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { users } from "./users";
-import { accounts } from "./accounts";
-import { transactions } from "./transactions";
-import type { ImportStatus, FileFormat } from "../enums";
+import { users } from "@/shared/db/schema/users";
+import { accounts } from "@/shared/db/schema/accounts";
+import { transactions } from "@/shared/db/schema/transactions";
+import type { ImportStatus, FileFormat } from "@/shared/db/enums";
 
 export const importJobs = pgTable(
   "import_jobs",

@@ -10,11 +10,11 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { users } from "./users";
-import { accounts } from "./accounts";
-import { categories } from "./categories";
-import { importJobs } from "./imports";
-import type { TransactionType } from "../enums";
+import { users } from "@/shared/db/schema/users";
+import { accounts } from "@/shared/db/schema/accounts";
+import { categories } from "@/shared/db/schema/categories";
+import { importJobs } from "@/shared/db/schema/imports";
+import type { TransactionType } from "@/shared/db/enums";
 
 export const transactions = pgTable(
   "transactions",

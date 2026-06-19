@@ -1,10 +1,11 @@
 import { pgTable, uuid, text, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { accounts } from "./accounts";
-import { categories } from "./categories";
-import { transactions } from "./transactions";
-import { categorizationRules } from "./rules";
-import { importJobs } from "./imports";
+import { accounts } from "@/shared/db/schema/accounts";
+import { categories } from "@/shared/db/schema/categories";
+import { transactions } from "@/shared/db/schema/transactions";
+import { categorizationRules } from "@/shared/db/schema/rules";
+import { importJobs } from "@/shared/db/schema/imports";
+import { refreshTokens } from "@/shared/db/schema/refresh-tokens";
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -25,6 +26,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   transactions: many(transactions),
   categorizationRules: many(categorizationRules),
   importJobs: many(importJobs),
+  refreshTokens: many(refreshTokens),
 }));
 
 export type User = typeof users.$inferSelect;
