@@ -3,8 +3,6 @@ import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import {
   registerSchema,
   loginSchema,
-  refreshSchema,
-  logoutSchema,
   authDataResponse,
   refreshDataResponse,
   logoutDataResponse,
@@ -22,6 +20,16 @@ import { env } from "@/shared/config/env";
 import { UnauthorizedError } from "@/shared/errors";
 
 const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
+  const setRefreshTokenCookie = (reply: any, token: string) => {
+    reply.setCookie("refreshToken", token, {
+      path: "/",
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+    });
+  };
+
   fastify.post(
     "/register",
     {
@@ -49,8 +57,10 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
       );
       await storeRefreshToken({ userId: user.id, rawToken: refreshToken });
 
+      setRefreshTokenCookie(reply, refreshToken);
+
       return reply.status(201).send({
-        data: { user, accessToken, refreshToken },
+        data: { user, accessToken },
       });
     },
   );
@@ -82,8 +92,10 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
       );
       await storeRefreshToken({ userId: user.id, rawToken: refreshToken });
 
+      setRefreshTokenCookie(reply, refreshToken);
+
       return reply.status(200).send({
-        data: { user, accessToken, refreshToken },
+        data: { user, accessToken },
       });
     },
   );
@@ -94,7 +106,6 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
       schema: {
         description: "Refresh an expiring access token",
         tags: ["auth"],
-        body: refreshSchema,
         response: {
           200: refreshDataResponse,
           401: errorResponse,
@@ -103,7 +114,11 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     async (request, reply) => {
-      const { refreshToken } = request.body;
+      const refreshToken = request.cookies.refreshToken;
+
+      if (!refreshToken) {
+        throw new UnauthorizedError("Refresh token not found");
+      }
 
       let payload: { sub: string; type?: string };
       try {
@@ -133,8 +148,10 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
         newRawToken: newRefreshToken,
       });
 
+      setRefreshTokenCookie(reply, newRefreshToken);
+
       return reply.status(200).send({
-        data: { accessToken: newAccessToken, refreshToken: newRefreshToken },
+        data: { accessToken: newAccessToken },
       });
     },
   );
@@ -145,7 +162,6 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
       schema: {
         description: "Invalidate the current session",
         tags: ["auth"],
-        body: logoutSchema,
         security: [{ bearerAuth: [] }],
         response: {
           200: logoutDataResponse,
@@ -156,15 +172,23 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
       preHandler: [fastify.authenticate],
     },
     async (request, reply) => {
-      const { refreshToken } = request.body;
+      const refreshToken = request.cookies.refreshToken;
 
-      try {
-        fastify.jwt.verify(refreshToken);
-      } catch {
-        throw new UnauthorizedError("Invalid refresh token");
+      if (refreshToken) {
+        try {
+          fastify.jwt.verify(refreshToken);
+          await logoutUser(refreshToken);
+        } catch {
+          // Ignore invalid token on logout, just proceed to clear cookie
+        }
       }
 
-      await logoutUser(refreshToken);
+      reply.clearCookie("refreshToken", {
+        path: "/",
+        httpOnly: true,
+        secure: env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
 
       return reply.status(200).send({
         data: { message: "Logged out successfully" },
