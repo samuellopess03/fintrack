@@ -55,7 +55,14 @@ describe("POST /auth/register", () => {
     expect(res.statusCode).toBe(201);
     expect(body.data.user.email).toBe("int-test@fintrack.dev");
     expect(body.data.accessToken).toBeDefined();
-    expect(body.data.refreshToken).toBeDefined();
+    expect(body.data.refreshToken).toBeUndefined();
+
+    const cookie = res.cookies.find((c) => c.name === "refreshToken");
+    expect(cookie).toBeDefined();
+    expect(cookie?.value).toBeDefined();
+    expect(cookie?.httpOnly).toBe(true);
+    expect(cookie?.sameSite).toBe("Strict");
+
     expect(body.meta.requestId).toBeDefined();
   });
 
@@ -127,7 +134,13 @@ describe("POST /auth/login", () => {
     expect(res.statusCode).toBe(200);
     expect(body.data.user.email).toBe("int-test@fintrack.dev");
     expect(body.data.accessToken).toBeDefined();
-    expect(body.data.refreshToken).toBeDefined();
+    expect(body.data.refreshToken).toBeUndefined();
+
+    const cookie = res.cookies.find((c) => c.name === "refreshToken");
+    expect(cookie).toBeDefined();
+    expect(cookie?.value).toBeDefined();
+    expect(cookie?.httpOnly).toBe(true);
+
     expect(body.meta.requestId).toBeDefined();
   });
 
@@ -173,8 +186,10 @@ describe("POST /auth/refresh", () => {
       },
     });
     const body = JSON.parse(res.body);
-    refreshToken = body.data.refreshToken;
     accessToken = body.data.accessToken;
+
+    const cookie = res.cookies.find((c) => c.name === "refreshToken");
+    refreshToken = cookie!.value;
   });
 
   afterAll(async () => {
@@ -185,14 +200,20 @@ describe("POST /auth/refresh", () => {
     const res = await app.inject({
       method: "POST",
       url: "/auth/refresh",
-      body: { refreshToken },
+      cookies: { refreshToken },
     });
     const body = JSON.parse(res.body);
 
     expect(res.statusCode).toBe(200);
     expect(body.data.accessToken).toBeDefined();
-    expect(body.data.refreshToken).toBeDefined();
-    expect(body.data.refreshToken).not.toBe(refreshToken);
+    expect(body.data.refreshToken).toBeUndefined();
+
+    const cookie = res.cookies.find((c) => c.name === "refreshToken");
+    expect(cookie).toBeDefined();
+    expect(cookie?.value).toBeDefined();
+    expect(cookie?.value).not.toBe(refreshToken);
+
+    refreshToken = cookie!.value;
   });
 
   it("returns 401 when refresh token was already revoked", async () => {
@@ -200,7 +221,7 @@ describe("POST /auth/refresh", () => {
       method: "POST",
       url: "/auth/logout",
       headers: { authorization: `Bearer ${accessToken}` },
-      body: { refreshToken },
+      cookies: { refreshToken },
     });
 
     expect(logoutRes.statusCode).toBe(200);
@@ -208,7 +229,7 @@ describe("POST /auth/refresh", () => {
     const res = await app.inject({
       method: "POST",
       url: "/auth/refresh",
-      body: { refreshToken },
+      cookies: { refreshToken },
     });
     const body = JSON.parse(res.body);
 
@@ -234,7 +255,9 @@ describe("POST /auth/logout", () => {
     });
     const body = JSON.parse(res.body);
     accessToken = body.data.accessToken;
-    refreshToken = body.data.refreshToken;
+
+    const cookie = res.cookies.find((c) => c.name === "refreshToken");
+    refreshToken = cookie!.value;
   });
 
   afterAll(async () => {
@@ -246,17 +269,20 @@ describe("POST /auth/logout", () => {
       method: "POST",
       url: "/auth/logout",
       headers: { authorization: `Bearer ${accessToken}` },
-      body: { refreshToken },
+      cookies: { refreshToken },
     });
 
     expect(res.statusCode).toBe(200);
+
+    const cookie = res.cookies.find((c) => c.name === "refreshToken");
+    expect(cookie?.value).toBe("");
   });
 
   it("returns 401 without access token", async () => {
     const res = await app.inject({
       method: "POST",
       url: "/auth/logout",
-      body: { refreshToken },
+      cookies: { refreshToken },
     });
 
     expect(res.statusCode).toBe(401);
