@@ -9,8 +9,11 @@ frontend/dist/
 .env
 .env.local
 .env.*.local
+.env.test
 backend/.env
+backend/.env.test
 frontend/.env
+frontend/.env.test
 
 # IDE and editors
 .vscode/
