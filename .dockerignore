@@ -1,0 +1,41 @@
+# ── Docker Ignore (Root Context) ────────────────────────────────
+# Ignora arquivos locais para evitar que sejam enviados ao daemon do Docker,
+# otimizando o cache e acelerando o tempo de build.
+
+# ── Dependências locais (Devem ser instaladas via npm ci no Docker)
+node_modules/
+**/node_modules/
+
+# ── Compilações locais e temporários ───────────────────────────
+dist/
+**/dist/
+*.tsbuildinfo
+tmp/
+.tmp/
+coverage/
+**/coverage/
+
+# ── Arquivos de ambiente e segredos ────────────────────────────
+.env
+.env.test
+.env.*
+**/.env
+**/.env.test
+**/.env.*
+
+# ── Controle de versão e IDEs ──────────────────────────────────
+.git/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Logs ───────────────────────────────────────────────────────
+*.log
+**/logs/
+
+# ── Arquivos de Testes (Não necessários no runtime de produção)
+**/*.test.ts
+**/*.spec.ts
+**/jest.config.mjs
+**/jest.setup.cjs
