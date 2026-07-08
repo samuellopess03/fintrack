@@ -6,3 +6,6 @@ export { default as swaggerPlugin } from "@/shared/plugins/swagger.plugin";
 export { default as zodPlugin } from "@/shared/plugins/zod.plugin";
 export { default as errorHandlerPlugin } from "@/shared/plugins/error-handler.plugin";
 export { default as metaPlugin } from "@/shared/plugins/meta.plugin";
+export { default as helmetPlugin } from "@/shared/plugins/helmet.plugin";
+export { default as rateLimitPlugin } from "@/shared/plugins/rate-limit.plugin";
+export { default as metricsPlugin } from "@/shared/plugins/metrics.plugin";

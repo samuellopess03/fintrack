@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
-import { env } from "@/shared/config/env";
+import { env } from "@/shared/core/config/env";
 import {
   dbPlugin,
   redisPlugin,
@@ -12,6 +12,9 @@ import {
   zodPlugin,
   errorHandlerPlugin,
   metaPlugin,
+  helmetPlugin,
+  rateLimitPlugin,
+  metricsPlugin,
 } from "@/shared/plugins";
 
 export async function buildApp() {
@@ -24,7 +27,10 @@ export async function buildApp() {
     },
   }).withTypeProvider<ZodTypeProvider>();
 
-  await app.register(cors, { origin: true });
+  await app.register(cors, {
+    origin: env.ALLOWED_ORIGINS.split(","),
+    credentials: true,
+  });
   await app.register(cookie, { secret: env.JWT_SECRET });
   await app.register(dbPlugin);
   await app.register(redisPlugin);
@@ -34,6 +40,9 @@ export async function buildApp() {
   await app.register(zodPlugin);
   await app.register(metaPlugin);
   await app.register(errorHandlerPlugin);
+  await app.register(helmetPlugin);
+  await app.register(rateLimitPlugin);
+  await app.register(metricsPlugin);
 
   app.get("/health", async () => ({ status: "ok" }));
 

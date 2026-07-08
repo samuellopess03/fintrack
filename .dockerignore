@@ -39,3 +39,6 @@ coverage/
 **/*.spec.ts
 **/jest.config.mjs
 **/jest.setup.cjs
+
+# ── Diretórios do monorepo não necessários para nenhum build ────
+docs/
