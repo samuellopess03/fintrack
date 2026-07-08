@@ -8,7 +8,7 @@ import {
   rotateRefreshToken,
 } from "@/modules/auth/auth.service";
 import * as repository from "@/modules/auth/auth.repository";
-import { ConflictError, UnauthorizedError } from "@/shared/errors";
+import { ConflictError, UnauthorizedError } from "@/shared/core/errors";
 
 jest.mock("./auth.repository");
 jest.mock("bcryptjs");

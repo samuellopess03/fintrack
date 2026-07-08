@@ -1,8 +1,8 @@
 import fp from "fastify-plugin";
 import fjwt from "@fastify/jwt";
 import type { FastifyRequest } from "fastify";
-import { env } from "@/shared/config/env";
-import { UnauthorizedError } from "@/shared/errors";
+import { env } from "@/shared/core/config/env";
+import { UnauthorizedError } from "@/shared/core/errors";
 
 export default fp(async (fastify) => {
   await fastify.register(fjwt, {

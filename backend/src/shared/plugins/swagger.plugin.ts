@@ -2,7 +2,7 @@ import fp from "fastify-plugin";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import { jsonSchemaTransform } from "fastify-type-provider-zod";
-import { env } from "@/shared/config/env";
+import { env } from "@/shared/core/config/env";
 
 export default fp(async (fastify) => {
   await fastify.register(swagger, {

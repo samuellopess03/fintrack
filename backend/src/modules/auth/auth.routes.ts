@@ -16,8 +16,8 @@ import {
   rotateRefreshToken,
   logoutUser,
 } from "@/modules/auth/auth.service";
-import { env } from "@/shared/config/env";
-import { UnauthorizedError } from "@/shared/errors";
+import { env } from "@/shared/core/config/env";
+import { UnauthorizedError } from "@/shared/core/errors";
 
 const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
   const setRefreshTokenCookie = (reply: any, token: string) => {

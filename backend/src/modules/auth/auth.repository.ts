@@ -1,8 +1,8 @@
 import { eq, and, isNull, gt } from "drizzle-orm";
-import { db, type DbClient } from "@/shared/db/client";
-import { users } from "@/shared/db/schema/users";
-import { refreshTokens } from "@/shared/db/schema/refresh-tokens";
-import { UnauthorizedError } from "@/shared/errors";
+import { db, type DbClient } from "@/shared/data/db/client";
+import { users } from "@/shared/data/db/schema/users";
+import { refreshTokens } from "@/shared/data/db/schema/refresh-tokens";
+import { UnauthorizedError } from "@/shared/core/errors";
 
 // ── Internals (accept tx for transaction reuse) ──
 

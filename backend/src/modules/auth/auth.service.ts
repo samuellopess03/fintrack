@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import bcrypt from "bcryptjs";
 import * as repository from "@/modules/auth/auth.repository";
-import { ConflictError, UnauthorizedError } from "@/shared/errors";
+import { ConflictError, UnauthorizedError } from "@/shared/core/errors";
 
 export type AuthResult = {
   id: string;
