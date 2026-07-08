@@ -63,14 +63,14 @@ export const users = pgTable('users', {
 
 ### `accounts`
 
-Representa uma conta bancária, carteira ou cartão do usuário.
+Represents a bank account, wallet, or credit card belonging to the user.
 
 ```sql
 CREATE TABLE accounts (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name         TEXT NOT NULL,
-  type         TEXT NOT NULL CHECK (type IN ('corrente', 'poupança', 'carteira', 'cartão')),
+  type         TEXT NOT NULL CHECK (type IN ('checking', 'savings', 'wallet', 'credit_card')),
   currency     TEXT NOT NULL DEFAULT 'BRL',
   color        TEXT NOT NULL DEFAULT '#6366F1',
   is_archived  BOOLEAN NOT NULL DEFAULT false,

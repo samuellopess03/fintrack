@@ -136,7 +136,7 @@ Se uma variável obrigatória estiver ausente ou inválida, o processo termina
 com uma mensagem clara — nunca sobe com configuração silenciosamente errada.
 
 ```typescript
-// src/shared/config/env.ts
+// src/shared/core/config/env.ts
 import { z } from 'zod'
 
 const envSchema = z.object({
@@ -163,7 +163,7 @@ Erros são classes tipadas, não strings soltas. O Fastify captura erros
 não tratados via `setErrorHandler` e serializa a resposta corretamente.
 
 ```typescript
-// src/shared/errors/AppError.ts
+// src/shared/core/errors/app.error.ts
 export class AppError extends Error {
   constructor(
     public readonly message: string,

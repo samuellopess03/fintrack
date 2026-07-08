@@ -6,116 +6,119 @@
 
 ```
 docs/
-├── README.md                      ← este arquivo
+├── README.md
 │
-├── spec/
-│   ├── 00-overview.md             ← visão geral, objetivos, escopo e fluxo principal
-│   ├── 01-requirements.md         ← requisitos funcionais (RF) e não funcionais (RNF)
-│   ├── 02-database.md             ← modelagem PostgreSQL, Drizzle schema, índices, paginação
-│   ├── 03-backend.md              ← arquitetura Fastify, módulos, endpoints, padrões
-│   ├── 04-async-pipeline.md       ← RabbitMQ, worker, Strategy, Chain of Responsibility, Unit of Work
-│   ├── 05-cache.md                ← Redis, chaves, TTLs, invalidação, degradação graceful
-│   ├── 06-frontend.md             ← React, TanStack Query, estrutura de pastas, polling
-│   ├── 07-testing.md              ← Jest, testes unitários, integração, fixtures
-│   ├── 08-observability.md        ← Prometheus, Grafana, Pino, métricas, dashboards, alertas
-│   └── 09-infra.md                ← Docker, Docker Compose, GitHub Actions CI/CD, Terraform
+├── spec/                                 ← o quê construir e como estruturar
+│   │
+│   │  FUNDAÇÃO
+│   ├── 00-overview.md                   ← visão geral, objetivos, escopo e fluxo principal
+│   ├── 01-requirements.md               ← requisitos funcionais (RF) e não funcionais (RNF)
+│   │
+│   │  BACKEND
+│   ├── 02-database.md                   ← schema PostgreSQL, Drizzle, índices, keyset pagination
+│   ├── 03-backend.md                    ← arquitetura Fastify, módulos, endpoints, padrões
+│   ├── 04-async-pipeline.md             ← RabbitMQ, worker, Strategy, Chain of Responsibility, Unit of Work
+│   ├── 05-cache.md                      ← Redis, chaves, TTLs, invalidação, degradação graceful
+│   │
+│   │  FRONTEND
+│   ├── 06-frontend.md                   ← React, TanStack Query, estrutura de pastas, polling
+│   │
+│   │  QUALIDADE
+│   ├── 07-testing.md                    ← Jest, testes unitários, integração, fixtures
+│   ├── 08-observability.md              ← Prometheus, Grafana, Pino, métricas, dashboards, alertas
+│   │
+│   │  INFRAESTRUTURA
+│   ├── 09-infra.md                      ← Docker, Docker Compose, GitHub Actions CI/CD, Terraform
+│   │
+│   │  QUALIDADES TRANSVERSAIS
+│   ├── 10-security.md                   ← autenticação, autorização, IDOR, XSS, CORS, rate limiting
+│   ├── 11-accessibility.md              ← WCAG 2.1 AA, semântica, teclado, formulários, testes a11y
+│   ├── 12-performance.md                ← SLOs, índices, pool, bundle splitting, virtualização, k6
+│   ├── 13-error-handling.md             ← taxonomia de erros, circuit breaker, retry, graceful shutdown
+│   ├── 14-i18n.md                       ← locale pt-BR, moeda, datas, fusos, encoding, parsing bancário
+│   ├── 15-code-conventions.md           ← TypeScript strict, naming, commits, ESLint, code review
+│   ├── 16-privacy-lgpd.md               ← LGPD, base legal, direitos do titular, retenção, incidentes
+│   └── 17-api-design.md                 ← REST semântico, versionamento, envelopes, idempotência, OpenAPI
 │
-└── adr/
-    ├── ADR-001-fastify.md          ← Fastify vs Express vs Hapi
-    ├── ADR-002-drizzle.md          ← Drizzle vs Prisma vs TypeORM
-    ├── ADR-003-rabbitmq.md         ← RabbitMQ vs BullMQ vs SQS
-    ├── ADR-004-zod.md              ← Zod vs Yup vs class-validator
-    ├── ADR-005-jest-swc.md         ← Jest+SWC vs Vitest
-    ├── ADR-006-react.md            ← React vs Vue vs Angular
-    ├── ADR-007-redis-cache.md      ← Redis vs Memcached vs cache in-process
-    ├── ADR-008-prometheus-grafana.md ← Prometheus+Grafana vs Datadog vs OTel+Jaeger
-    ├── ADR-009-backend-architecture.md ← módulos por domínio vs camadas técnicas vs Clean Architecture
+└── adr/                                 ← por que cada decisão foi tomada
+    │
+    │  ESCOLHA DE FERRAMENTAS
+    ├── ADR-001-fastify.md               ← Fastify vs Express vs Hapi
+    ├── ADR-002-drizzle.md               ← Drizzle vs Prisma vs TypeORM
+    ├── ADR-003-rabbitmq.md              ← RabbitMQ vs BullMQ vs SQS
+    ├── ADR-004-zod.md                   ← Zod vs Yup vs class-validator
+    ├── ADR-005-jest-ts-jest.md          ← Jest+TS-Jest vs Vitest
+    ├── ADR-006-react.md                 ← React vs Vue vs Angular
+    ├── ADR-007-redis-cache.md           ← Redis vs Memcached vs in-process
+    ├── ADR-008-prometheus-grafana.md    ← Prometheus+Grafana vs Datadog vs OTel+Jaeger
+    │
+    │  DECISÕES ARQUITETURAIS
+    ├── ADR-009-backend-architecture.md  ← módulos por domínio vs camadas técnicas vs Clean Arch
     ├── ADR-010-frontend-architecture.md ← camadas, server/client state, organização de pastas
-    ├── ADR-011-backend-techniques.md ← Keyset Pagination, Unit of Work, Fail-Fast de env
-    ├── ADR-012-frontend-techniques.md ← TanStack Query, polling adaptativo, union types de UI state
-    └── ADR-013-monorepo.md         ← monorepo npm workspaces vs polyrepo vs Turborepo
+    ├── ADR-013-monorepo.md              ← monorepo npm workspaces vs polyrepo vs Turborepo
+    │
+    │  TÉCNICAS DE IMPLEMENTAÇÃO
+    ├── ADR-011-backend-techniques.md    ← Keyset Pagination, Unit of Work, Fail-Fast de env
+    └── ADR-012-frontend-techniques.md   ← TanStack Query, polling adaptativo, union types de UI
 ```
 
 ## Ordem de leitura recomendada
 
-Para quem está iniciando o desenvolvimento, leia os documentos nesta ordem:
+### Para iniciar o desenvolvimento
 
-1. **SPEC-00** — Entenda o problema, o escopo e o fluxo principal do sistema.
-2. **SPEC-01** — Conheça todos os requisitos antes de escrever qualquer linha de código.
-3. **SPEC-02** — Modele o banco de dados; é a fundação de tudo.
-4. **SPEC-03** — Configure o backend e entenda a separação de responsabilidades.
-5. **SPEC-04** — Implemente o pipeline assíncrono (a peça mais complexa do sistema).
-6. **SPEC-05** — Adicione a camada de cache com invalidação correta.
-7. **SPEC-06** — Construa o frontend conectado à API.
-8. **SPEC-07** — Escreva os testes à medida que constrói cada módulo.
-9. **SPEC-08** — Instrumente métricas e configure os dashboards.
-10. **SPEC-09** — Finalize com Docker Compose, CI/CD e Terraform.
+1. **SPEC-00** — Entenda o problema e o fluxo principal.
+2. **SPEC-01** — Conheça todos os requisitos.
+3. **SPEC-02** — Modele o banco de dados (fundação de tudo).
+4. **SPEC-03** — Configure o backend.
+5. **SPEC-04** — Pipeline assíncrono (peça mais complexa).
+6. **SPEC-05** — Cache com invalidação correta.
+7. **SPEC-06** — Frontend conectado à API.
+8. **SPEC-07** — Testes ao longo do desenvolvimento.
+9. **SPEC-08** → **SPEC-09** — Observabilidade e infraestrutura.
 
-Os ADRs podem ser lidos em qualquer ordem — cada um é independente e
-documenta o raciocínio por trás de uma decisão técnica específica.
+### Qualidades transversais
 
-## Mapa dos ADRs por categoria
-
-### Escolha de ferramentas e bibliotecas
-| ADR | Decisão | Alternativas analisadas |
-|-----|---------|------------------------|
-| ADR-001 | Fastify como framework HTTP | Express, Hapi |
-| ADR-002 | Drizzle como ORM | Prisma, TypeORM |
-| ADR-003 | RabbitMQ como message broker | BullMQ, SQS |
-| ADR-004 | Zod como validação | Yup, class-validator |
-| ADR-005 | Jest + @swc/jest para testes | Vitest |
-| ADR-006 | React como biblioteca de UI | Vue.js, Angular |
-| ADR-007 | Redis exclusivo para cache | Memcached, in-process |
-| ADR-008 | Prometheus + Grafana para observabilidade | Datadog, OTel+Jaeger |
-
-### Decisões arquiteturais
-| ADR | Decisão | Alternativas analisadas |
-|-----|---------|------------------------|
-| ADR-009 | Backend organizado por domínio (módulos verticais) | Camadas técnicas, Clean Architecture |
-| ADR-010 | Frontend em camadas explícitas com separação server/client state | Redux, Next.js, monorepo de tipos |
-| ADR-013 | Monorepo com npm workspaces | Polyrepo, Turborepo |
-
-### Técnicas de implementação
-| ADR | Técnica | Problema resolvido |
-|-----|---------|-------------------|
-| ADR-011 | Keyset Pagination, Unit of Work, Fail-Fast de env | Performance de listagem, atomicidade, erros de config |
-| ADR-012 | TanStack Query, polling adaptativo, union types de UI | Server state, feedback de jobs, estados impossíveis |
+- **SPEC-10** — Segurança: leia para ter noção da segurança do sistema.
+- **SPEC-11** — Acessibilidade: leia para entender como a acessibilidade foi aplicada aos componentes.
+- **SPEC-12** — Performance: leia para conhecer as estratégias de performance adotadas.
+- **SPEC-13** — Erros: leia para compreender como o tratamento de erros é estruturado no sistema.
+- **SPEC-14** — i18n: leia para saber como localização e internacionalização foram tratadas.
+- **SPEC-15** — Convenções: leia para se familiarizar com as convenções de código do projeto.
+- **SPEC-16** — LGPD: leia para entender as práticas de privacidade e adequação à LGPD.
+- **SPEC-17** — API design: leia para conhecer os padrões de design de API do sistema.
 
 ## Stack completa
 
-| Camada           | Tecnologia                                  |
-|------------------|---------------------------------------------|
-| Frontend         | React 18 + TypeScript + TanStack Query      |
-| Backend          | Fastify + Node.js + TypeScript              |
-| Banco de dados   | PostgreSQL + Drizzle ORM                    |
-| Cache            | Redis (somente cache — sem fila)            |
-| Mensageria       | RabbitMQ (AMQP — somente fila)              |
-| Testes           | Jest + @swc/jest                            |
-| Validação        | Zod (backend e frontend)                    |
-| Observabilidade  | Prometheus + Grafana + Pino                 |
-| Infra local      | Docker Compose                              |
-| Infra cloud      | AWS (ECS Fargate, RDS, ElastiCache)         |
-| IaC              | Terraform                                   |
-| CI/CD            | GitHub Actions                              |
-| Repositório      | Monorepo com npm workspaces                 |
+| Camada          | Tecnologia                             |
+| --------------- | -------------------------------------- |
+| Frontend        | React 19 + TypeScript + TanStack Query |
+| Backend         | Fastify + Node.js + TypeScript         |
+| Banco de dados  | PostgreSQL + Drizzle ORM               |
+| Cache           | Redis (somente cache)                  |
+| Mensageria      | RabbitMQ (AMQP)                        |
+| Testes          | Jest + @swc/jest                       |
+| Validação       | Zod (backend e frontend)               |
+| Observabilidade | Prometheus + Grafana + Pino            |
+| Infra local     | Docker Compose                         |
+| Infra cloud     | AWS (ECS Fargate, RDS, ElastiCache)    |
+| IaC             | Terraform                              |
+| CI/CD           | GitHub Actions                         |
+| Repositório     | Monorepo com npm workspaces            |
 
 ## Iniciar o ambiente de desenvolvimento
 
 ```bash
-# 1. Copiar variáveis de ambiente
 cp .env.example .env
-
-# 2. Subir todos os serviços
 docker compose up -d
-
-# 3. Aplicar migrations e seed
 npm run db:migrate
 npm run db:seed
 
-# 4. Acessar
-#   Frontend:          http://localhost:5173
-#   API:               http://localhost:3000
-#   RabbitMQ UI:       http://localhost:15672  (fintrack/fintrack)
-#   Grafana:           http://localhost:3001   (admin/admin)
-#   Prometheus:        http://localhost:9090
+# Acessar:
+#   Frontend:    http://localhost:5173
+#   API:         http://localhost:3000
+#   API Docs:    http://localhost:3000/docs
+#   RabbitMQ UI: http://localhost:15672  (fintrack/fintrack)
+#   Redis UI:    http://localhost:5540
+#   Grafana:     http://localhost:3001   (admin/admin)
+#   Prometheus:  http://localhost:9090
 ```

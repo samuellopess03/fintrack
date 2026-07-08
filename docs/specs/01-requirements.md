@@ -15,7 +15,7 @@ observáveis e funcionalidades entregues ao usuário.
 | RF-01.2  | O usuário pode editar o nome e o tipo de uma conta existente.             | Alta       |
 | RF-01.3  | O usuário pode arquivar uma conta (soft delete — dados preservados).      | Média      |
 | RF-01.4  | O sistema exibe o saldo atual de cada conta (calculado a partir das transações). | Alta |
-| RF-01.5  | Tipos de conta suportados: `corrente`, `poupança`, `carteira`, `cartão`.  | Alta       |
+| RF-01.5  | Tipos de conta suportados: `checking`, `savings`, `wallet`, `credit_card`.| Alta       |
 
 ---
 

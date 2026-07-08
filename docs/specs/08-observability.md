@@ -8,7 +8,7 @@ clássicos de observabilidade:
 
 - **Métricas** (Prometheus + Grafana): o que está acontecendo agora, em números.
 - **Logs** (Pino): o que aconteceu, em ordem, com contexto.
-- **Traces** (futuro): por onde uma requisição passou e quanto tempo levou em cada etapa.
+- **Traces** (OpenTelemetry + Tempo): por onde uma requisição passou e quanto tempo levou em cada etapa.
 
 ---
 
@@ -18,8 +18,11 @@ clássicos de observabilidade:
 |-------------------|--------------------------------------------------------|
 | **Pino**          | Logger estruturado em JSON — embutido no Fastify       |
 | **Prometheus**    | Coleta e armazena métricas em time series              |
-| **Grafana**       | Dashboards e alertas sobre as métricas do Prometheus   |
+| **Grafana**       | Dashboards e alertas que unifica métricas, traces e logs |
 | **prom-client**   | Biblioteca Node.js que expõe métricas no formato Prometheus |
+| **@opentelemetry/sdk-node** | SDK de instrumentação automática para traces HTTP, Fastify e Pino |
+| **OTel Collector** | Gateway de dados: recebe OTLP, processa em batch, encaminha ao Tempo |
+| **grafana/tempo** | Banco de traces indexado, integrável nativamente ao Grafana |
 
 ---
 
@@ -28,7 +31,7 @@ clássicos de observabilidade:
 ### Métricas da API (HTTP)
 
 ```typescript
-// src/shared/metrics/http.metrics.ts
+// src/shared/observability/metrics/http.metrics.ts
 import { Histogram, Counter, register } from 'prom-client'
 
 // Duração de cada requisição HTTP por rota e status
@@ -70,7 +73,7 @@ app.addHook('onResponse', (request, reply, done) => {
 ### Métricas do Worker e da Fila
 
 ```typescript
-// src/shared/metrics/worker.metrics.ts
+// src/shared/observability/metrics/worker.metrics.ts
 
 // Tempo de processamento de cada job de importação
 export const importJobDuration = new Histogram({
@@ -121,7 +124,7 @@ try {
 ### Métricas de Cache
 
 ```typescript
-// src/shared/metrics/cache.metrics.ts
+// src/shared/observability/metrics/cache.metrics.ts
 
 export const cacheOperations = new Counter({
   name:    'fintrack_cache_operations_total',
@@ -143,10 +146,10 @@ export const cacheOperationDuration = new Histogram({
 ### Endpoint de métricas
 
 ```typescript
-// src/modules/metrics/metrics.routes.ts
+// src/shared/plugins/metrics.plugin.ts
 import { register } from 'prom-client'
 
-app.get('/metrics', async (request, reply) => {
+fastify.get('/metrics', async (_request, reply) => {
   reply.header('Content-Type', register.contentType)
   return register.metrics()
 })
@@ -158,12 +161,92 @@ não pelo público externo.
 
 ---
 
+## Traces — fluxo completo
+
+### Instrumentação com OpenTelemetry
+
+O FinTrack usa o **OTel SDK** para gerar traces automaticamente sem necessidade
+de instrumentação manual. O SDK é carregado antes da aplicação via `--import`.
+
+```typescript
+// src/shared/observability/telemetry/tracing.ts
+import "dotenv/config";
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
+import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
+import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
+
+const sdk = new NodeSDK({
+  serviceName: process.env.OTEL_SERVICE_NAME ?? "fintrack-api",
+  traceExporter: new OTLPTraceExporter({
+    url: `http://${process.env.OTEL_COLLECTOR_HOST ?? "otel-collector"}:4318/v1/traces`,
+  }),
+  instrumentations: [
+    new HttpInstrumentation(),
+    new FastifyInstrumentation(),
+    new PinoInstrumentation(),
+  ],
+});
+
+sdk.start();
+```
+
+### Arquitetura de transporte
+
+```
+Fastify → OTel SDK → OTLP (HTTP) → otel-collector → gRPC → Tempo → Grafana
+```
+
+| Componente | Porta | Função |
+|-----------|-------|--------|
+| **OTel SDK** (na app) | — | Gera spans e exporta via OTLP |
+| **otel-collector** | 4317 (gRPC), 4318 (HTTP) | Recebe, faz batch, encaminha ao Tempo |
+| **tempo** | 3200 (HTTP), 4317 (gRPC) | Armazena e indexa traces |
+| **Grafana** | 3001 | Consulta Tempo para visualização |
+
+### Instrumentações ativas
+
+| Instrumentação | O que cobre |
+|----------------|------------|
+| `HttpInstrumentation` | Toda requisição HTTP recebida/enviada |
+| `FastifyInstrumentation` | Rotas, hooks,生命周期 do Fastify |
+| `PinoInstrumentation` | Injeta `traceId` e `spanId` em cada log |
+
+### Visualização no Grafana
+
+1. Abra o Grafana em `http://localhost:3001`
+2. Vá em **Explore** → selecione **Tempo** como datasource
+3. Pesquise por `{ service.name = "fintrack-api" }`
+4. Clique em qualquer trace para ver a árvore de spans
+
+Também é possível **correlacionar métricas e traces**: no dashboard Prometheus,
+clique num pico de latência e veja os traces lentos daquele período.
+
+### Propagação de contexto
+
+O `traceId` gerado pelo OTel é automaticamente injetado nos logs pelo
+`PinoInstrumentation`, permitindo correlacionar logs e traces:
+
+```json
+{
+  "level": "info",
+  "traceId": "abc123...",
+  "spanId": "def456...",
+  "message": "POST /auth/login completed"
+}
+```
+
+Isso cumpre o requisito **RNF-05.4** (requestId propagado em todos os logs).
+
+---
+
 ## Logs — estrutura e padrões
 
 ### Configuração do Pino no Fastify
 
 ```typescript
-// src/config/logger.ts
+// src/shared/core/config/logger.ts
 import pino from 'pino'
 
 export const pinoConfig = {
@@ -182,7 +265,8 @@ Cada linha de log deve conter:
 |-------------|--------|-----------------------------------------------------|
 | `timestamp` | string | ISO 8601 — quando o evento ocorreu                  |
 | `level`     | string | `trace`, `debug`, `info`, `warn`, `error`, `fatal`  |
-| `requestId` | string | UUID único por requisição HTTP (gerado pelo Fastify) |
+| `traceId`   | string | ID do trace OTel (propagado pelo instrumentation-pino) |
+| `spanId`    | string | ID do span atual dentro do trace                    |
 | `message`   | string | Descrição do evento                                 |
 | `context`   | object | Dados adicionais relevantes ao evento               |
 
@@ -245,6 +329,18 @@ logger.info({ jobId, importedCount, skippedCount, durationMs }, 'Import job comp
 | Hit rate do cache   | `rate(fintrack_cache_operations_total{operation="hit"}[5m]) / rate(fintrack_cache_operations_total[5m])` |
 | Invalidações        | `rate(fintrack_cache_operations_total{operation="invalidation"}[5m])`                      |
 
+### Dashboard: Traces (Grafana + Tempo)
+
+O Grafana já possui o Tempo como datasource configurado. Para explorar traces:
+
+1. Acesse **Explore** → datasource **Tempo**
+2. Use a query `{ service.name = "fintrack-api" }` ou `{ service.name = "fintrack-worker" }`
+3. Filtre por duração mínima (`duration > 500ms`) para encontrar requisições lentas
+4. Use **TraceQL** para consultas avançadas:
+   - `{ .http.method = "POST" && .http.status_code >= 500 }`
+   - `{ duration > 1s }`
+5. Correlacione com logs usando o `traceId` presente em cada entrada do Pino
+
 ---
 
 ## Alertas (Grafana Alerting)
@@ -262,7 +358,7 @@ logger.info({ jobId, importedCount, skippedCount, durationMs }, 'Import job comp
 ## Configuração do Prometheus (prometheus.yml)
 
 ```yaml
-# infra/prometheus/prometheus.yml
+# backend/infra/prometheus/prometheus.yml
 global:
   scrape_interval: 15s
   evaluation_interval: 15s

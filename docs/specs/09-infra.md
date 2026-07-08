@@ -258,7 +258,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     volumes:
-      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./backend/infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     depends_on:
@@ -270,7 +270,7 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: admin
       GF_USERS_ALLOW_SIGN_UP:     false
     volumes:
-      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+      - ./backend/infra/grafana/provisioning:/etc/grafana/provisioning
       - grafana_data:/var/lib/grafana
     ports:
       - "3001:3000"

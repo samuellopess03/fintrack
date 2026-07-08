@@ -29,7 +29,7 @@ o usuário acaba de adicionar um lançamento.
 ## Implementação do cache service
 
 ```typescript
-// src/shared/cache/cache.service.ts
+// src/shared/data/cache/cache.service.ts
 
 export class CacheService {
   constructor(private readonly redis: Redis) {}
