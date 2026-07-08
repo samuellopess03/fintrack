@@ -1,6 +1,9 @@
-import "dotenv/config";
+import "@/shared/observability/telemetry/tracing";
+import pino from "pino";
 import { buildApp } from "@/app";
-import { env } from "@/shared/config/env";
+import { env } from "@/shared/core/config/env";
+
+const logger = pino({ level: env.LOG_LEVEL });
 
 async function main() {
   const app = await buildApp();
@@ -18,6 +21,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("Failed to start server", err);
+  logger.fatal({ err }, "Failed to start server");
   process.exit(1);
 });
