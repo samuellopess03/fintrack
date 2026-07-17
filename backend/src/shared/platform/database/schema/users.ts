@@ -1,11 +1,11 @@
 import { pgTable, uuid, text, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { accounts } from "@/shared/data/db/schema/accounts";
-import { categories } from "@/shared/data/db/schema/categories";
-import { transactions } from "@/shared/data/db/schema/transactions";
-import { categorizationRules } from "@/shared/data/db/schema/rules";
-import { importJobs } from "@/shared/data/db/schema/imports";
-import { refreshTokens } from "@/shared/data/db/schema/refresh-tokens";
+import { accounts } from "@/shared/platform/database/schema/accounts";
+import { categories } from "@/shared/platform/database/schema/categories";
+import { transactions } from "@/shared/platform/database/schema/transactions";
+import { categorizationRules } from "@/shared/platform/database/schema/rules";
+import { importJobs } from "@/shared/platform/database/schema/imports";
+import { refreshTokens } from "@/shared/platform/database/schema/refresh-tokens";
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -31,3 +31,4 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+

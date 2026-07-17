@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { db } from "@/shared/data/db/client";
-import { users } from "@/shared/data/db/schema/users";
-import { categories, type NewCategory } from "@/shared/data/db/schema/categories";
-import { DEFAULT_CATEGORIES } from "@/shared/data/db/defaults";
+import { db } from "@/shared/platform/database/client";
+import { users } from "@/shared/platform/database/schema/users";
+import { categories, type NewCategory } from "@/shared/platform/database/schema/categories";
+import { DEFAULT_CATEGORIES } from "@/shared/platform/database/defaults";
 
 const DEV_USER_ID = "00000000-0000-0000-0000-000000000001";
 

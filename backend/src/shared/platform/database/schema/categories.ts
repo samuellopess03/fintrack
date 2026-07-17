@@ -10,9 +10,9 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { users } from "@/shared/data/db/schema/users";
-import { transactions } from "@/shared/data/db/schema/transactions";
-import type { BudgetPeriod } from "@/shared/data/db/enums";
+import { users } from "@/shared/platform/database/schema/users";
+import { transactions } from "@/shared/platform/database/schema/transactions";
+import type { BudgetPeriod } from "@/shared/platform/database/enums";
 
 export const categories = pgTable(
   "categories",
@@ -82,3 +82,4 @@ export type NewCategory = typeof categories.$inferInsert;
 
 export type BudgetGoal = typeof budgetGoals.$inferSelect;
 export type NewBudgetGoal = typeof budgetGoals.$inferInsert;
+

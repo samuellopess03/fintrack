@@ -28,7 +28,7 @@ export async function buildApp() {
   }).withTypeProvider<ZodTypeProvider>();
 
   await app.register(cors, {
-    origin: env.ALLOWED_ORIGINS.split(","),
+    origin: env.ALLOWED_ORIGINS,
     credentials: true,
   });
   await app.register(cookie, { secret: env.JWT_SECRET });

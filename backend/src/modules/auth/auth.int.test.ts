@@ -23,7 +23,7 @@ afterAll(async () => {
 async function deleteTestUser() {
   try {
     const { db } = app;
-    const { users } = await import("@/shared/data/db/schema");
+    const { users } = await import("@/shared/platform/database/schema");
     const { eq } = await import("drizzle-orm");
     await db.delete(users).where(eq(users.email, "int-test@fintrack.dev"));
   } catch {

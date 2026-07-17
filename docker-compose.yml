@@ -1,6 +1,23 @@
 name: fintrack
 
+x-app-build: &app-build
+  context: .
+  dockerfile: backend/Dockerfile
+
+x-app-common-env: &app-common-env
+  DATABASE_URL: ${DATABASE_URL}
+  REDIS_URL: ${REDIS_URL}
+  RABBITMQ_URL: ${RABBITMQ_URL}
+  JWT_SECRET: ${JWT_SECRET}
+  LOG_LEVEL: ${LOG_LEVEL}
+  OTEL_COLLECTOR_HOST: otel-collector
+
+x-app-common-restart: &app-common-restart unless-stopped
+
 services:
+  # ---------------------------------------------------------------------------
+  # Dados e dependências da aplicação
+  # ---------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
     environment:
@@ -56,22 +73,18 @@ services:
       timeout: 5s
       retries: 5
 
+  # ---------------------------------------------------------------------------
+  # Aplicação principal
+  # ---------------------------------------------------------------------------
   api:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    build: *app-build
     environment:
+      <<: *app-common-env
       NODE_ENV: production
       PORT: ${PORT}
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
-      RABBITMQ_URL: ${RABBITMQ_URL}
-      JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
-      LOG_LEVEL: ${LOG_LEVEL}
       OTEL_SERVICE_NAME: fintrack-api
-      OTEL_COLLECTOR_HOST: otel-collector
     ports:
       - "3000:3000"
     depends_on:
@@ -81,22 +94,21 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    restart: unless-stopped
+    restart: *app-common-restart
 
   worker:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    command: ["node", "backend/dist/src/worker/worker.js"]
+    build: *app-build
+    command:
+      [
+        "node",
+        "--import",
+        "./backend/dist/src/shared/platform/observability/telemetry/tracing.js",
+        "backend/dist/src/worker/worker.js",
+      ]
     environment:
+      <<: *app-common-env
       NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
-      RABBITMQ_URL: ${RABBITMQ_URL}
-      JWT_SECRET: ${JWT_SECRET}
-      LOG_LEVEL: ${LOG_LEVEL}
       OTEL_SERVICE_NAME: fintrack-worker
-      OTEL_COLLECTOR_HOST: otel-collector
     depends_on:
       postgres:
         condition: service_healthy
@@ -104,8 +116,11 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    restart: unless-stopped
+    restart: *app-common-restart
 
+  # ---------------------------------------------------------------------------
+  # Observabilidade de traces
+  # ---------------------------------------------------------------------------
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     command: ["--config=/etc/otel/otel-collector.yml"]
@@ -116,18 +131,37 @@ services:
       - "4318:4318"
     depends_on:
       - tempo
-    restart: unless-stopped
+    restart: *app-common-restart
 
-  tempo:
-    image: grafana/tempo:latest
-    command: ["-config.file=/etc/tempo/tempo.yml"]
+  # ---------------------------------------------------------------------------
+  # Observabilidade de logs
+  # ---------------------------------------------------------------------------
+  loki:
+    image: grafana/loki:latest
+    user: "0"
+    command: ["-config.file=/etc/loki/loki.yml"]
     volumes:
-      - ./backend/infra/tempo/tempo.yml:/etc/tempo/tempo.yml
-      - tempo_data:/tmp/tempo
+      - ./backend/infra/loki/loki.yml:/etc/loki/loki.yml
+      - loki_data:/var/loki
     ports:
-      - "3200:3200"
-    restart: unless-stopped
+      - "3100:3100"
+    restart: *app-common-restart
 
+  promtail:
+    image: grafana/promtail:latest
+    command: ["-config.file=/etc/promtail/promtail.yml"]
+    volumes:
+      - ./backend/infra/promtail/promtail.yml:/etc/promtail/promtail.yml
+      - promtail_data:/var/lib/promtail
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    depends_on:
+      - loki
+    restart: *app-common-restart
+
+  # ---------------------------------------------------------------------------
+  # Observabilidade de métricas e dashboards
+  # ---------------------------------------------------------------------------
   prometheus:
     image: prom/prometheus:latest
     volumes:
@@ -137,7 +171,7 @@ services:
       - "9090:9090"
     depends_on:
       - api
-    restart: unless-stopped
+    restart: *app-common-restart
 
   grafana:
     image: grafana/grafana:latest
@@ -151,8 +185,23 @@ services:
       - "3001:3000"
     depends_on:
       - prometheus
+      - loki
       - tempo
-    restart: unless-stopped
+    restart: *app-common-restart
+
+  # ---------------------------------------------------------------------------
+  # Backend de traces
+  # ---------------------------------------------------------------------------
+  tempo:
+    image: grafana/tempo:latest
+    user: "0"
+    command: ["-config.file=/etc/tempo/tempo.yml"]
+    volumes:
+      - ./backend/infra/tempo/tempo.yml:/etc/tempo/tempo.yml
+      - tempo_data:/var/tempo
+    ports:
+      - "3200:3200"
+    restart: *app-common-restart
 
 volumes:
   postgres_data:
@@ -162,3 +211,5 @@ volumes:
   prometheus_data:
   grafana_data:
   tempo_data:
+  loki_data:
+  promtail_data:

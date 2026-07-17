@@ -1,6 +1,7 @@
 import type Redis from "ioredis";
+import type { CacheStore } from "@/shared/contracts/cache-store";
 
-export class CacheService {
+export class CacheService implements CacheStore {
   private failureCount = 0;
   private lastFailure: Date | null = null;
   private readonly FAILURE_THRESHOLD = 5;

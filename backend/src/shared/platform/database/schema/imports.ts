@@ -8,10 +8,10 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { users } from "@/shared/data/db/schema/users";
-import { accounts } from "@/shared/data/db/schema/accounts";
-import { transactions } from "@/shared/data/db/schema/transactions";
-import type { ImportStatus, FileFormat } from "@/shared/data/db/enums";
+import { users } from "@/shared/platform/database/schema/users";
+import { accounts } from "@/shared/platform/database/schema/accounts";
+import { transactions } from "@/shared/platform/database/schema/transactions";
+import type { ImportStatus, FileFormat } from "@/shared/platform/database/enums";
 
 export const importJobs = pgTable(
   "import_jobs",
@@ -66,3 +66,4 @@ export const importJobsRelations = relations(importJobs, ({ one, many }) => ({
 
 export type ImportJob = typeof importJobs.$inferSelect;
 export type NewImportJob = typeof importJobs.$inferInsert;
+

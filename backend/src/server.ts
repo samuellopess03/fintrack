@@ -1,4 +1,4 @@
-import "@/shared/observability/telemetry/tracing";
+import { shutdownTelemetry } from "@/shared/platform/observability/telemetry/tracing";
 import pino from "pino";
 import { buildApp } from "@/app";
 import { env } from "@/shared/core/config/env";
@@ -14,13 +14,18 @@ async function main() {
   for (const signal of signals) {
     process.on(signal, async () => {
       app.log.info(`Received ${signal}, shutting down gracefully`);
-      await app.close();
-      process.exit(0);
+      try {
+        await app.close();
+      } finally {
+        await shutdownTelemetry().catch(() => undefined);
+        process.exit(0);
+      }
     });
   }
 }
 
-main().catch((err) => {
+main().catch(async (err) => {
   logger.fatal({ err }, "Failed to start server");
+  await shutdownTelemetry().catch(() => undefined);
   process.exit(1);
 });

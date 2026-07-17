@@ -8,9 +8,9 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { users } from "@/shared/data/db/schema/users";
-import { transactions } from "@/shared/data/db/schema/transactions";
-import type { AccountType } from "@/shared/data/db/enums";
+import { users } from "@/shared/platform/database/schema/users";
+import { transactions } from "@/shared/platform/database/schema/transactions";
+import type { AccountType } from "@/shared/platform/database/enums";
 
 export const accounts = pgTable(
   "accounts",
@@ -47,3 +47,4 @@ export const accountsRelations = relations(accounts, ({ one, many }) => ({
 
 export type Account = typeof accounts.$inferSelect;
 export type NewAccount = typeof accounts.$inferInsert;
+

@@ -1,10 +1,7 @@
-import "dotenv/config"
-import pg from "pg"
-
-const { Pool } = pg
+import "dotenv/config";
+import { pool } from "@/shared/platform/database/client";
 
 async function reset() {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL })
   const client = await pool.connect()
 
   try {

@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
-import * as schema from "@/shared/data/db/schema";
+import * as schema from "@/shared/platform/database/schema";
 
 export function buildTestDb() {
   const pool = new pg.Pool({
@@ -11,3 +11,4 @@ export function buildTestDb() {
 }
 
 export type TestDb = ReturnType<typeof buildTestDb>;
+

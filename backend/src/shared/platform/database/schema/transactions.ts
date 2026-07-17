@@ -10,11 +10,11 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { users } from "@/shared/data/db/schema/users";
-import { accounts } from "@/shared/data/db/schema/accounts";
-import { categories } from "@/shared/data/db/schema/categories";
-import { importJobs } from "@/shared/data/db/schema/imports";
-import type { TransactionType } from "@/shared/data/db/enums";
+import { users } from "@/shared/platform/database/schema/users";
+import { accounts } from "@/shared/platform/database/schema/accounts";
+import { categories } from "@/shared/platform/database/schema/categories";
+import { importJobs } from "@/shared/platform/database/schema/imports";
+import type { TransactionType } from "@/shared/platform/database/enums";
 
 export const transactions = pgTable(
   "transactions",
@@ -86,3 +86,4 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
+

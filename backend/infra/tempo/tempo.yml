@@ -1,6 +1,5 @@
 server:
   http_listen_port: 3200
-  grpc_listen_port: 4317
 
 distributor:
   receivers:
@@ -9,18 +8,10 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:4317
 
-ingester:
-  trace_idle_period: 10s
-  max_block_duration: 30m
-
-compactor:
-  compaction:
-    block_retention: 48h
-
 storage:
   trace:
     backend: local
     local:
-      path: /tmp/tempo/blocks
+      path: /var/tempo/blocks
     wal:
-      path: /tmp/tempo/wal
+      path: /var/tempo/wal

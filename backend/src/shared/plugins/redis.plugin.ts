@@ -1,13 +1,13 @@
 import fp from "fastify-plugin";
 import Redis from "ioredis";
 import { env } from "@/shared/core/config/env";
-import { CacheService } from "@/shared/data/cache";
+import { CacheService, RedisCacheStore } from "@/shared/platform/cache";
 
 export default fp(async (fastify) => {
   let redis: Redis | undefined;
 
   try {
-    redis = new Redis(env.REDIS_URL, {
+    const client = new Redis(env.REDIS_URL, {
       maxRetriesPerRequest: 3,
       retryStrategy(times) {
         if (times > 5) return null;
@@ -18,7 +18,8 @@ export default fp(async (fastify) => {
       connectTimeout: 5_000,
     });
 
-    await redis.connect();
+    await client.connect();
+    redis = client;
   } catch (err) {
     fastify.log.warn({ err }, "Redis unavailable — running without cache");
   }
@@ -30,18 +31,30 @@ export default fp(async (fastify) => {
   }
 
   const cacheService = new CacheService(redis);
+  const cacheStore = new RedisCacheStore(cacheService);
 
   fastify.decorate("redis", redis);
-  fastify.decorate("cache", cacheService);
+  fastify.decorate("cache", cacheStore);
 
   fastify.addHook("onClose", async () => {
-    if (redis) await redis.quit();
+    if (!redis) return;
+
+    try {
+      if (redis.status === "ready") {
+        await redis.quit();
+      } else {
+        redis.disconnect();
+      }
+    } catch {
+      redis.disconnect();
+    }
   });
 });
 
 declare module "fastify" {
   interface FastifyInstance {
     redis?: Redis;
-    cache: CacheService;
+    cache: RedisCacheStore;
   }
 }
+

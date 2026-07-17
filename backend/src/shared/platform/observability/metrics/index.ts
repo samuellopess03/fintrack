@@ -1,16 +1,16 @@
 export {
   httpRequestDuration,
   httpRequestTotal,
-} from "@/shared/observability/metrics/http.metrics";
+} from "@/shared/platform/observability/metrics/http.metrics";
 
 export {
   cacheOperations,
   cacheOperationDuration,
-} from "@/shared/observability/metrics/cache.metrics";
+} from "@/shared/platform/observability/metrics/cache.metrics";
 
 export {
   importJobDuration,
   importJobTotal,
   transactionsImported,
   categorizationResults,
-} from "@/shared/observability/metrics/worker.metrics";
+} from "@/shared/platform/observability/metrics/worker.metrics";
