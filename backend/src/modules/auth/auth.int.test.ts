@@ -127,7 +127,7 @@ describe("POST /auth/login", () => {
     const res = await app.inject({
       method: "POST",
       url: "/auth/login",
-      body: { email: "int-test@fintrack.dev", password: "12345678" },
+      body: { email: "int-test@fintrack.dev", password: "Abcdef12" },
     });
     const body = JSON.parse(res.body);
 
@@ -161,7 +161,7 @@ describe("POST /auth/login", () => {
     const res = await app.inject({
       method: "POST",
       url: "/auth/login",
-      body: { email: "no-exist@fintrack.dev", password: "12345678" },
+      body: { email: "no-exist@fintrack.dev", password: "Abcdef12" },
     });
     const body = JSON.parse(res.body);
 

@@ -45,9 +45,10 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   const { eq } = await import("drizzle-orm");
-  const { accounts } = await import("@/shared/platform/database/schema");
+  const { accounts, transactions } = await import("@/shared/platform/database/schema");
   const { db } = app;
 
+  await db.delete(transactions).where(eq(transactions.userId, userId));
   await db.delete(accounts).where(eq(accounts.userId, userId));
 });
 
