@@ -26,8 +26,10 @@ export default fp(async (fastify) => {
     transform: jsonSchemaTransform,
   });
 
-  await fastify.register(swaggerUi, {
-    routePrefix: "/docs",
-    uiConfig: { docExpansion: "list" },
-  });
+  if (env.NODE_ENV === "development") {
+    await fastify.register(swaggerUi, {
+      routePrefix: "/docs",
+      uiConfig: { docExpansion: "list" },
+    });
+  }
 });

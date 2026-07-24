@@ -47,7 +47,7 @@ describe("POST /auth/register", () => {
       body: {
         email: "int-test@fintrack.dev",
         name: "Int Test",
-        password: "12345678",
+        password: "Abcdef12",
       },
     });
     const body = JSON.parse(res.body);
@@ -73,7 +73,7 @@ describe("POST /auth/register", () => {
       body: {
         email: "int-test@fintrack.dev",
         name: "Int Test",
-        password: "12345678",
+        password: "Abcdef12",
       },
     });
 
@@ -83,7 +83,7 @@ describe("POST /auth/register", () => {
       body: {
         email: "int-test@fintrack.dev",
         name: "Int Test",
-        password: "12345678",
+        password: "Abcdef12",
       },
     });
     const body = JSON.parse(res.body);
@@ -93,7 +93,7 @@ describe("POST /auth/register", () => {
     expect(body.error.message).toBe("Email already registered");
   });
 
-  it("returns 400 for invalid body", async () => {
+  it("returns 422 for invalid body", async () => {
     const res = await app.inject({
       method: "POST",
       url: "/auth/register",
@@ -101,7 +101,7 @@ describe("POST /auth/register", () => {
     });
     const body = JSON.parse(res.body);
 
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(422);
     expect(body.error.code).toBe("VALIDATION_ERROR");
   });
 });
@@ -114,7 +114,7 @@ describe("POST /auth/login", () => {
       body: {
         email: "int-test@fintrack.dev",
         name: "Int Test",
-        password: "12345678",
+        password: "Abcdef12",
       },
     });
   });
@@ -182,7 +182,7 @@ describe("POST /auth/refresh", () => {
       body: {
         email: "int-test@fintrack.dev",
         name: "Int Test",
-        password: "12345678",
+        password: "Abcdef12",
       },
     });
     const body = JSON.parse(res.body);
@@ -250,7 +250,7 @@ describe("POST /auth/logout", () => {
       body: {
         email: "int-test@fintrack.dev",
         name: "Int Test",
-        password: "12345678",
+        password: "Abcdef12",
       },
     });
     const body = JSON.parse(res.body);

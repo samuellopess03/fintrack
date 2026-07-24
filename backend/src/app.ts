@@ -47,6 +47,9 @@ export async function buildApp() {
   app.get("/health", async () => ({ status: "ok" }));
 
   await app.register(import("@/modules/auth/auth.routes"), { prefix: "/auth" });
+  await app.register(import("@/modules/accounts/accounts.routes"), {
+    prefix: "/accounts",
+  });
 
   return app;
 }

@@ -25,10 +25,10 @@ export default fp(async (fastify) => {
 
     if (error instanceof Error && 'validation' in error) {
       const fastifyError = error as FastifyError
-      reply.status(400).send({
+      reply.status(422).send({
         error: {
           code: 'VALIDATION_ERROR',
-          message: fastifyError.message,
+          message: 'Validation failed',
           details: fastifyError.validation,
         },
       })
