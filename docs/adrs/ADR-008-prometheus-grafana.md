@@ -85,16 +85,16 @@ Esta stack cobre o pilar de **métricas**. Os outros dois pilares são:
 |-----------|--------------------|---------------------------|
 | Métricas  | Prometheus+Grafana | Implementado (v1)         |
 | Logs      | Pino (JSON)        | Implementado (v1)         |
-| Traces    | OpenTelemetry      | Fora do escopo na v1      |
+| Traces    | OpenTelemetry      | Implementado na base atual |
 
 **Logs estruturados com Pino** cobrem o pilar de logs — cada requisição gera
-logs JSON com `requestId`, `level`, `timestamp` e contexto de negócio. Em
-produção, esses logs são agregados por um serviço externo (CloudWatch, Loki,
-ou similar) para busca e correlação.
+logs JSON com `traceId`, `spanId`, `timestamp` e contexto de negócio. O
+`requestId` fica disponível no envelope de resposta para suporte e correlação
+de chamadas.
 
 **Distributed tracing** (rastreamento de uma request através de API → fila →
-worker) é o passo natural após métricas e logs, mas adiciona complexidade
-de instrumentação (spans, context propagation) que está fora do escopo da v1.
+worker) já está presente na base atual com OpenTelemetry, o que reforça a
+correlação entre logs, métricas e requisições sem depender apenas do `requestId`.
 
 ---
 

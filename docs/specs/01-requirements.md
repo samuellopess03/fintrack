@@ -164,8 +164,8 @@ desempenho, segurança e operabilidade.
 |-----------|--------------------------------------------------------------------------|
 | RNF-05.1  | A API expõe métricas no endpoint `GET /metrics` no formato Prometheus.   |
 | RNF-05.2  | As seguintes métricas devem estar disponíveis: tempo de resposta por rota, jobs pendentes na fila, tempo médio de processamento de CSV, taxa de erro de categorização. |
-| RNF-05.3  | Todos os logs devem ser estruturados em JSON com os campos: `timestamp`, `level`, `requestId`, `message`, `context`. |
-| RNF-05.4  | Cada requisição HTTP recebe um `requestId` único propagado em todos os logs daquela requisição. |
+| RNF-05.3  | Todos os logs devem ser estruturados em JSON com os campos: `timestamp`, `level`, `traceId`, `spanId`, `message`, `context`. |
+| RNF-05.4  | Cada requisição HTTP recebe um `requestId` único no envelope de resposta (`meta.requestId`), permitindo correlação com os logs daquela requisição. |
 
 ---
 

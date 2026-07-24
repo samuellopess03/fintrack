@@ -42,9 +42,9 @@ sem poluir o escopo global da aplicação. Isso favorece a organização em mód
 independentes que o projeto adota.
 
 ### Logging estruturado embutido
-Fastify usa o **Pino** como logger padrão — estruturado em JSON, com `requestId`
-automático por requisição, sem configuração adicional. Essencial para o requisito
-de observabilidade (RNF-05).
+Fastify usa o **Pino** como logger padrão — estruturado em JSON e integrado ao
+ciclo de vida da request, o que facilita correlação por `request.id` e pelos
+traces da aplicação. Essencial para o requisito de observabilidade (RNF-05).
 
 ---
 

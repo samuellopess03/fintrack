@@ -231,7 +231,8 @@ clique num pico de latência e veja os traces lentos daquele período.
 ### Propagação de contexto
 
 O `traceId` gerado pelo OTel é automaticamente injetado nos logs pelo
-`PinoInstrumentation`, permitindo correlacionar logs e traces:
+`PinoInstrumentation`, permitindo correlacionar logs e traces. O `requestId`
+da requisição fica disponível no envelope de resposta como `meta.requestId`:
 
 ```json
 {
@@ -242,7 +243,9 @@ O `traceId` gerado pelo OTel é automaticamente injetado nos logs pelo
 }
 ```
 
-Isso cumpre o requisito **RNF-05.4** (requestId propagado em todos os logs).
+Com isso, a API oferece duas camadas de correlação: `traceId`/`spanId` para
+observabilidade técnica e `requestId` no `meta` para suporte e rastreio
+de requisições.
 
 ---
 

@@ -96,7 +96,7 @@ docs/
 | Banco de dados  | PostgreSQL + Drizzle ORM               |
 | Cache           | Redis (somente cache)                  |
 | Mensageria      | RabbitMQ (AMQP)                        |
-| Testes          | Jest + @swc/jest                       |
+| Testes          | Jest + ts-jest                         |
 | Validação       | Zod (backend e frontend)               |
 | Observabilidade | Prometheus + Grafana + Pino            |
 | Infra local     | Docker Compose                         |
@@ -116,7 +116,7 @@ npm run db:seed
 # Acessar:
 #   Frontend:    http://localhost:5173
 #   API:         http://localhost:3000
-#   API Docs:    http://localhost:3000/docs
+#   API Docs:    http://localhost:3000/docs  (somente em desenvolvimento)
 #   RabbitMQ UI: http://localhost:15672  (fintrack/fintrack)
 #   Redis UI:    http://localhost:5540
 #   Grafana:     http://localhost:3001   (admin/admin)

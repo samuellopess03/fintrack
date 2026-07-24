@@ -65,7 +65,7 @@ function generateTokens(userId: string) {
   )
 
   const refreshToken = jwt.sign(
-    { sub: userId, type: 'refresh', jti: crypto.randomUUID() },
+    { sub: userId, type: 'refresh', nonce: crypto.randomUUID() },
     env.JWT_SECRET,
     { expiresIn: '7d', algorithm: 'HS256' }
   )
@@ -81,7 +81,7 @@ O bcrypt aplica um work factor de custo 12 — suficientemente lento para
 dificultar brute force, suficientemente rápido para não impactar o login.
 
 ```typescript
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 
 const BCRYPT_ROUNDS = 12
 
@@ -108,16 +108,18 @@ const passwordSchema = z.string()
 
 ### Invalidação de refresh token (logout)
 
-Refresh tokens têm um `jti` (JWT ID) único. Na tabela `refresh_tokens`,
-tokens válidos são rastreados. No logout, o token é removido da tabela —
-mesmo que não tenha expirado, não pode mais ser usado.
+Refresh tokens são armazenados por hash e marcados como revogados quando o
+usuário faz logout. Mesmo que o JWT ainda não tenha expirado, o token deixa
+de ser aceito porque o hash correspondente passa a estar revogado.
 
 ```sql
 CREATE TABLE refresh_tokens (
-  jti        UUID PRIMARY KEY,
-  user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  expires_at TIMESTAMPTZ NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  id          UUID PRIMARY KEY,
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash  TEXT NOT NULL,
+  expires_at  TIMESTAMPTZ NOT NULL,
+  revoked_at  TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
