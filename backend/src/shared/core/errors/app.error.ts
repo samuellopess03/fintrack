@@ -34,8 +34,8 @@ export class UnauthorizedError extends AppError {
 }
 
 export class ForbiddenError extends AppError {
-  constructor(resource: string) {
-    super(`Access denied to resource: ${resource}`, 403, "FORBIDDEN");
+  constructor(message: string) {
+    super(message, 403, "FORBIDDEN");
   }
 }
 

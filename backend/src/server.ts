@@ -3,8 +3,6 @@ import pino from "pino";
 import { buildApp } from "@/app";
 import { env } from "@/shared/core/config/env";
 
-const logger = pino({ level: env.LOG_LEVEL });
-
 async function main() {
   const app = await buildApp();
 
@@ -25,7 +23,7 @@ async function main() {
 }
 
 main().catch(async (err) => {
-  logger.fatal({ err }, "Failed to start server");
+  pino({ level: env.LOG_LEVEL }).fatal({ err }, "Failed to start server");
   await shutdownTelemetry().catch(() => undefined);
   process.exit(1);
 });
