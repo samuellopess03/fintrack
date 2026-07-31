@@ -50,6 +50,9 @@ export async function buildApp() {
   await app.register(import("@/modules/accounts/accounts.routes"), {
     prefix: "/accounts",
   });
+  await app.register(import("@/modules/categories/categories.routes"), {
+    prefix: "/categories",
+  });
 
   return app;
 }

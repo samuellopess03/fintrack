@@ -25,7 +25,7 @@ async function seed() {
     name: cat.name,
     color: cat.color,
     icon: cat.icon,
-    isDefault: false,
+    isDefault: true,
     userId: DEV_USER_ID,
   }));
 

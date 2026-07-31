@@ -28,6 +28,9 @@ export const categories = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [index("idx_categories_user_id").on(table.userId)],
 );
