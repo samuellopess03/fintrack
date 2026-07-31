@@ -1,8 +1,9 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, sql } from "drizzle-orm";
 import type { AccountType } from "@/shared/platform/database/enums";
 import { db, type DbClient } from "@/shared/platform/database/client";
 import { accounts, Account } from "@/shared/platform/database/schema/accounts";
 import { transactions } from "@/shared/platform/database/schema/transactions";
+import { InfrastructureError } from "@/shared/core/errors";
 
 export type AccountWithBalance = Account & {
   balance: string;
@@ -29,17 +30,7 @@ type QueryOptions = {
   includeArchived?: boolean;
 };
 
-const accountGroupBy = [
-  accounts.id,
-  accounts.userId,
-  accounts.name,
-  accounts.type,
-  accounts.currency,
-  accounts.color,
-  accounts.isArchived,
-  accounts.createdAt,
-  accounts.updatedAt,
-] as const;
+const accountGroupBy = Object.values(getTableColumns(accounts));
 
 function getClient(tx?: DbClient) {
   return tx ?? db;
@@ -122,7 +113,7 @@ export async function createAccount(data: CreateAccountData) {
       .returning();
 
     if (!created) {
-      throw new Error("Failed to create account");
+      throw new InfrastructureError("accounts");
     }
 
     if (data.initialBalance > 0) {
@@ -142,7 +133,7 @@ export async function createAccount(data: CreateAccountData) {
     });
 
     if (!account) {
-      throw new Error("Failed to load created account");
+      throw new InfrastructureError("accounts");
     }
 
     return account;

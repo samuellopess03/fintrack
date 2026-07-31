@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, jest } from "@jest/globals";
-import { NotFoundError } from "@/shared/core/errors";
+import { InfrastructureError, NotFoundError } from "@/shared/core/errors";
 import * as repository from "@/modules/accounts/accounts.repository";
 import {
   createAccountSchema,
@@ -228,6 +228,8 @@ describe("AccountsModule", () => {
   // ---------------------------------------------------------------------------
 
   describe("Service", () => {
+    const mockLog = { warn: jest.fn(), info: jest.fn(), error: jest.fn() } as any;
+
     beforeEach(() => {
       jest.clearAllMocks();
     });
@@ -252,13 +254,17 @@ describe("AccountsModule", () => {
           balance: "100.00",
         });
 
-        const result = await createAccount("user-uuid", {
-          name: "Conta principal",
-          type: "checking",
-          currency: "BRL",
-          color: "#6366F1",
-          initialBalance: 100,
-        });
+        const result = await createAccount(
+          "user-uuid",
+          {
+            name: "Conta principal",
+            type: "checking",
+            currency: "BRL",
+            color: "#6366F1",
+            initialBalance: 100,
+          },
+          mockLog,
+        );
 
         expect(result).toEqual(expect.objectContaining({ id: "acc-uuid" }));
         expect(repository.createAccount).toHaveBeenCalledWith(
@@ -267,6 +273,31 @@ describe("AccountsModule", () => {
             name: "Conta principal",
             initialBalance: 100,
           }),
+        );
+      });
+
+      it("logs and propagates InfrastructureError from the repository", async () => {
+        (repository.createAccount as jest.Mock<any>).mockRejectedValue(
+          new InfrastructureError("accounts"),
+        );
+
+        await expect(
+          createAccount(
+            "user-uuid",
+            {
+              name: "Conta",
+              type: "checking",
+              currency: "BRL",
+              color: "#6366F1",
+              initialBalance: 0,
+            },
+            mockLog,
+          ),
+        ).rejects.toThrow(InfrastructureError);
+
+        expect(mockLog.error).toHaveBeenCalledWith(
+          { userId: "user-uuid" },
+          "Failed to create account",
         );
       });
     });

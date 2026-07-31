@@ -89,7 +89,11 @@ const accountsRoutes: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     async (request, reply) => {
-      const account = await createAccount(getUserId(request), request.body);
+      const account = await createAccount(
+        getUserId(request),
+        request.body,
+        fastify.log,
+      );
 
       return reply.status(201).send({
         data: account,
