@@ -216,6 +216,31 @@ describe("POST /auth/refresh", () => {
     refreshToken = cookie!.value;
   });
 
+  it("returns 401 when refresh token cookie is missing", async () => {
+    const res = await app.inject({
+      method: "POST",
+      url: "/auth/refresh",
+    });
+    const body = JSON.parse(res.body);
+
+    expect(res.statusCode).toBe(401);
+    expect(body.error.code).toBe("UNAUTHORIZED");
+    expect(body.error.message).toBe("Refresh token not found");
+  });
+
+  it("returns 401 when the cookie holds a non-refresh token", async () => {
+    const res = await app.inject({
+      method: "POST",
+      url: "/auth/refresh",
+      cookies: { refreshToken: accessToken },
+    });
+    const body = JSON.parse(res.body);
+
+    expect(res.statusCode).toBe(401);
+    expect(body.error.code).toBe("UNAUTHORIZED");
+    expect(body.error.message).toBe("Invalid refresh token");
+  });
+
   it("returns 401 when refresh token was already revoked", async () => {
     const logoutRes = await app.inject({
       method: "POST",

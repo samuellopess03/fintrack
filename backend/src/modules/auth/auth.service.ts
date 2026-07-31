@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
 import bcrypt from "bcryptjs";
 import * as repository from "@/modules/auth/auth.repository";
+import { seedDefaultCategories } from "@/modules/categories/categories.repository";
 import { ConflictError, UnauthorizedError } from "@/shared/core/errors";
+import type { AppLogger } from "@/shared/core/types/logger";
 
 export type AuthResult = {
   id: string;
@@ -14,11 +16,14 @@ function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export async function registerUser(data: {
-  email: string;
-  name: string;
-  password: string;
-}): Promise<AuthResult> {
+export async function registerUser(
+  data: {
+    email: string;
+    name: string;
+    password: string;
+  },
+  log: AppLogger,
+): Promise<AuthResult> {
   const existing = await repository.findByEmail(data.email);
   if (existing) {
     throw new ConflictError("Email already registered");
@@ -31,6 +36,12 @@ export async function registerUser(data: {
     name: data.name,
     passwordHash,
   });
+
+  try {
+    await seedDefaultCategories(user.id);
+  } catch {
+    log.warn({ userId: user.id }, "Failed to seed default categories");
+  }
 
   return user;
 }

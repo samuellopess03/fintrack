@@ -45,7 +45,7 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     async (request, reply) => {
-      const user = await registerUser(request.body);
+      const user = await registerUser(request.body, fastify.log);
 
       const accessToken = await reply.jwtSign(
         { sub: user.id },
@@ -179,7 +179,7 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
           fastify.jwt.verify(refreshToken);
           await logoutUser(refreshToken);
         } catch {
-          // Ignore invalid token on logout, just proceed to clear cookie
+          fastify.log.warn("Failed to revoke refresh token on logout — clearing cookie anyway");
         }
       }
 

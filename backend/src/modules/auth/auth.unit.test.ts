@@ -13,6 +13,9 @@ import { ConflictError, UnauthorizedError } from "@/shared/core/errors";
 
 jest.mock("./auth.repository");
 jest.mock("bcryptjs");
+jest.mock("@/modules/categories/categories.repository", () => ({
+  seedDefaultCategories: jest.fn<any>().mockResolvedValue(undefined),
+}));
 
 describe("AuthModule", () => {
   // ---------------------------------------------------------------------------
@@ -143,6 +146,8 @@ describe("AuthModule", () => {
   // ---------------------------------------------------------------------------
 
   describe("Service", () => {
+    const mockLog = { warn: jest.fn(), info: jest.fn(), error: jest.fn() } as any;
+
     beforeEach(() => {
       jest.clearAllMocks();
     });
@@ -158,11 +163,14 @@ describe("AuthModule", () => {
         };
         (repository.create as jest.Mock<any>).mockResolvedValue(mockUser);
 
-        const result = await registerUser({
-          email: "a@b.com",
-          name: "A",
-          password: "12345678",
-        });
+        const result = await registerUser(
+          {
+            email: "a@b.com",
+            name: "A",
+            password: "12345678",
+          },
+          mockLog,
+        );
 
         expect(result).toEqual(mockUser);
         expect(repository.findByEmail).toHaveBeenCalledWith("a@b.com");
@@ -176,11 +184,14 @@ describe("AuthModule", () => {
           id: "uuid",
         });
 
-        const promise = registerUser({
-          email: "a@b.com",
-          name: "A",
-          password: "12345678",
-        });
+        const promise = registerUser(
+          {
+            email: "a@b.com",
+            name: "A",
+            password: "12345678",
+          },
+          mockLog,
+        );
 
         await expect(promise).rejects.toThrow(ConflictError);
         await expect(promise).rejects.toThrow("Email already registered");
@@ -272,6 +283,16 @@ describe("AuthModule", () => {
           expiresAt: expect.any(Date),
         });
       });
+
+      it("propagates repository errors", async () => {
+        (repository.createRefreshToken as jest.Mock<any>).mockRejectedValue(
+          new Error("db down"),
+        );
+
+        await expect(
+          storeRefreshToken({ userId: "user-uuid", rawToken: "raw-token" }),
+        ).rejects.toThrow("db down");
+      });
     });
 
     describe("rotateRefreshToken", () => {
@@ -298,6 +319,20 @@ describe("AuthModule", () => {
           newHash,
           expiresAt: expect.any(Date),
         });
+      });
+
+      it("propagates repository errors", async () => {
+        (repository.rotateRefreshToken as jest.Mock<any>).mockRejectedValue(
+          new Error("db down"),
+        );
+
+        await expect(
+          rotateRefreshToken({
+            oldRawToken: "old-token",
+            userId: "user-uuid",
+            newRawToken: "new-token",
+          }),
+        ).rejects.toThrow("db down");
       });
     });
   });

@@ -2,12 +2,16 @@ import { eq, and, isNull, gt } from "drizzle-orm";
 import { db, type DbClient } from "@/shared/platform/database/client";
 import { users } from "@/shared/platform/database/schema/users";
 import { refreshTokens } from "@/shared/platform/database/schema/refresh-tokens";
-import { UnauthorizedError } from "@/shared/core/errors";
+import { UnauthorizedError, InfrastructureError } from "@/shared/core/errors";
 
 // ── Internals (accept tx for transaction reuse) ──
 
+function getClient(tx?: DbClient) {
+  return tx ?? db;
+}
+
 async function _findByEmail(email: string, tx?: DbClient) {
-  const client = tx ?? db;
+  const client = getClient(tx);
   const [user] = await client
     .select()
     .from(users)
@@ -24,7 +28,7 @@ async function _create(
   },
   tx?: DbClient,
 ) {
-  const client = tx ?? db;
+  const client = getClient(tx);
   const [user] = await client.insert(users).values(data).returning({
     id: users.id,
     email: users.email,
@@ -32,7 +36,7 @@ async function _create(
     createdAt: users.createdAt,
   });
   if (!user) {
-    throw new Error("Failed to create user");
+    throw new InfrastructureError("auth");
   }
   return user;
 }
@@ -45,12 +49,12 @@ async function _createRefreshToken(
   },
   tx?: DbClient,
 ) {
-  const client = tx ?? db;
+  const client = getClient(tx);
   await client.insert(refreshTokens).values(data);
 }
 
 async function _findValidRefreshToken(tokenHash: string, tx?: DbClient) {
-  const client = tx ?? db;
+  const client = getClient(tx);
   const [token] = await client
     .select()
     .from(refreshTokens)
@@ -66,7 +70,7 @@ async function _findValidRefreshToken(tokenHash: string, tx?: DbClient) {
 }
 
 async function _revokeRefreshToken(tokenHash: string, tx?: DbClient) {
-  const client = tx ?? db;
+  const client = getClient(tx);
   await client
     .update(refreshTokens)
     .set({ revokedAt: new Date() })
@@ -74,7 +78,7 @@ async function _revokeRefreshToken(tokenHash: string, tx?: DbClient) {
 }
 
 async function _revokeAllUserRefreshTokens(userId: string, tx?: DbClient) {
-  const client = tx ?? db;
+  const client = getClient(tx);
   await client
     .update(refreshTokens)
     .set({ revokedAt: new Date() })
