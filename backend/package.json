@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc --outDir dist && tsc-alias",
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "dev": "tsx watch --import src/shared/platform/observability/telemetry/tracing.ts src/server.ts",
     "start": "node --import ./dist/src/shared/platform/observability/telemetry/tracing.js ./dist/src/server.js",
     "db:generate": "dotenv -e .env -- drizzle-kit generate",

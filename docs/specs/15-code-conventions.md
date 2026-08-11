@@ -59,6 +59,7 @@ item?.toUpperCase()     // obrigado a verificar
 | Hooks React                | camelCase + "use" | `useTransactions.ts`            |
 | Services, utils, configs   | camelCase         | `auth.service.ts`, `currency.ts`|
 | Schemas Zod                | camelCase         | `transaction.schema.ts`         |
+| Types de domínio do módulo | camelCase         | `transaction.types.ts`          |
 | Testes                     | mesmo nome + test | `auth.service.test.ts`          |
 | Testes de a11y             | mesmo nome + a11y | `TransactionForm.a11y.test.tsx` |
 | Constantes                 | SCREAMING_SNAKE   | `MAX_FILE_SIZE_MB`              |
