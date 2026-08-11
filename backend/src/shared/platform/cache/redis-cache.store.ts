@@ -1,12 +1,13 @@
 import type Redis from "ioredis";
+import type { AppLogger } from "@/shared/core/types/logger";
 import { CacheService } from "@/shared/platform/cache";
 import type { CacheStore } from "@/shared/contracts/cache-store";
 
 export class RedisCacheStore implements CacheStore {
   constructor(private readonly cacheService: CacheService) {}
 
-  static fromRedis(redis: Redis | undefined) {
-    return new RedisCacheStore(new CacheService(redis));
+  static fromRedis(redis: Redis | undefined, log?: AppLogger) {
+    return new RedisCacheStore(new CacheService(redis, log));
   }
 
   get<T>(key: string): Promise<T | null> {

@@ -30,7 +30,7 @@ export default fp(async (fastify) => {
     });
   }
 
-  const cacheService = new CacheService(redis);
+  const cacheService = new CacheService(redis, fastify.log);
   const cacheStore = new RedisCacheStore(cacheService);
 
   fastify.decorate("redis", redis);

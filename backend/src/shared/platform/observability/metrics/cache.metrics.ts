@@ -2,8 +2,8 @@ import { Counter, Histogram } from "prom-client";
 
 export const cacheOperations = new Counter({
   name: "fintrack_cache_operations_total",
-  help: "Cache hits and misses",
-  labelNames: ["operation", "key_prefix"] as const,
+  help: "Cache operations by result",
+  labelNames: ["operation", "key_prefix", "result"] as const,
 });
 
 export const cacheOperationDuration = new Histogram({
