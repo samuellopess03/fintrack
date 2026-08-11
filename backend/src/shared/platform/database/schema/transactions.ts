@@ -6,7 +6,7 @@ import {
   date,
   timestamp,
   index,
-  unique,
+  uniqueIndex,
   check,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
@@ -46,9 +46,9 @@ export const transactions = pgTable(
       .notNull(),
   },
   (table) => [
-    unique("uq_transaction_dedup")
+    uniqueIndex("uq_transaction_dedup")
       .on(table.accountId, table.date, table.amount, table.description)
-      .nullsNotDistinct(),
+      .where(sql`${table.importJobId} IS NOT NULL`),
     index("idx_transactions_user_id").on(table.userId),
     index("idx_transactions_account_id").on(table.accountId),
     index("idx_transactions_category_id").on(table.categoryId),

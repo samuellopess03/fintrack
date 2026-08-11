@@ -1,0 +1,2 @@
+ALTER TABLE "transactions" DROP CONSTRAINT "uq_transaction_dedup";--> statement-breakpoint
+CREATE UNIQUE INDEX "uq_transaction_dedup" ON "transactions" USING btree ("account_id","date","amount","description") WHERE "transactions"."import_job_id" IS NOT NULL;

@@ -15,6 +15,20 @@
       "when": 1781405942591,
       "tag": "0001_add_refresh_token",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785530041532,
+      "tag": "0002_add_categories_updated_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785530105345,
+      "tag": "0003_transactions_dedup_partial_index",
+      "breakpoints": true
     }
   ]
 }
