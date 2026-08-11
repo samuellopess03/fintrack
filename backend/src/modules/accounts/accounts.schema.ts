@@ -51,21 +51,6 @@ export const accountResponse = z.object({
 export const accountsListResponse = withMeta(z.array(accountResponse));
 export const accountDataResponse = withMeta(accountResponse);
 
-export const errorResponse = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-  }),
-});
-
-export const validationErrorResponse = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-    details: z.any().optional(),
-  }),
-});
-
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
 export type UpdateAccountInput = z.infer<typeof updateAccountSchema>;
 export type AccountParamsInput = z.infer<typeof accountParamsSchema>;

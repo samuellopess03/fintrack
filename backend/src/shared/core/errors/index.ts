@@ -6,4 +6,16 @@ export {
   UnauthorizedError,
   ForbiddenError,
   InfrastructureError,
-} from "@/shared/core/errors/app.error";
+  RateLimitError,
+} from "@/shared/core/errors/error.classes";
+export {
+  toErrorResponse,
+  isServerError,
+  type ErrorResponse,
+  type ValidationDetail,
+} from "@/shared/core/errors/error.response";
+export {
+  errorResponse,
+  validationErrorResponse,
+  validationDetailSchema,
+} from "@/shared/core/errors/error.schema";

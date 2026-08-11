@@ -1,46 +1,14 @@
 import { and, eq } from "drizzle-orm";
 import { db, type DbClient } from "@/shared/platform/database/client";
-import { InfrastructureError } from "@/shared/core/errors";
-import {
-  categories,
-  type Category,
-} from "@/shared/platform/database/schema/categories";
-import {
-  budgetGoals,
-  type BudgetGoal,
-} from "@/shared/platform/database/schema/categories";
+import { categories } from "@/shared/platform/database/schema/categories";
+import { budgetGoals } from "@/shared/platform/database/schema/categories";
 import { DEFAULT_CATEGORIES } from "@/shared/platform/database/defaults";
-
-export type CategoryWithGoal = Category & {
-  budgetGoal: BudgetGoal | null;
-};
-
-export type CreateCategoryData = {
-  userId: string;
-  name: string;
-  color: string;
-  icon?: string | null;
-};
-
-export type UpdateCategoryData = {
-  name?: string;
-  color?: string;
-  icon?: string | null;
-};
-
-import type { BudgetPeriod } from "@/shared/platform/database/enums";
-
-export type CreateBudgetGoalData = {
-  userId: string;
-  categoryId: string;
-  amount: number;
-  period: BudgetPeriod;
-};
-
-export type UpdateBudgetGoalData = {
-  amount?: number;
-  period?: BudgetPeriod;
-};
+import type {
+  CategoryWithGoal,
+  CreateCategoryData,
+  CreateBudgetGoalData,
+} from "@/modules/categories/categories.types";
+import type { UpdateCategoryInput } from "@/modules/categories/categories.schema";
 
 function getClient(tx?: DbClient) {
   return tx ?? db;
@@ -81,11 +49,7 @@ export async function createCategory(data: CreateCategoryData) {
     })
     .returning();
 
-  if (!created) {
-    throw new InfrastructureError("categories");
-  }
-
-  return selectCategoryWithGoal(data.userId, created.id);
+  return selectCategoryWithGoal(data.userId, created!.id);
 }
 
 export async function findCategoriesByUserId(userId: string) {
@@ -100,9 +64,7 @@ export async function findCategoriesByUserId(userId: string) {
   const goals = await db
     .select()
     .from(budgetGoals)
-    .where(
-      eq(budgetGoals.userId, userId),
-    );
+    .where(eq(budgetGoals.userId, userId));
 
   const goalMap = new Map(goals.map((g) => [g.categoryId, g]));
 
@@ -112,17 +74,14 @@ export async function findCategoriesByUserId(userId: string) {
   }));
 }
 
-export async function findCategoryById(
-  userId: string,
-  categoryId: string,
-) {
+export async function findCategoryById(userId: string, categoryId: string) {
   return selectCategoryWithGoal(userId, categoryId);
 }
 
 export async function updateCategory(
   userId: string,
   categoryId: string,
-  data: UpdateCategoryData,
+  data: UpdateCategoryInput,
 ) {
   const [updated] = await db
     .update(categories)
@@ -166,10 +125,7 @@ export async function upsertBudgetGoal(data: CreateBudgetGoalData) {
   return goal ?? null;
 }
 
-export async function deleteBudgetGoal(
-  userId: string,
-  categoryId: string,
-) {
+export async function deleteBudgetGoal(userId: string, categoryId: string) {
   const [deleted] = await db
     .delete(budgetGoals)
     .where(

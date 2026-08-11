@@ -1,41 +1,24 @@
 import * as repository from "@/modules/categories/categories.repository";
-import {
-  NotFoundError,
-  ForbiddenError,
-  InfrastructureError,
-} from "@/shared/core/errors";
+import { NotFoundError, ForbiddenError } from "@/shared/core/errors";
 import type {
   CreateCategoryInput,
   UpdateCategoryInput,
   CreateBudgetGoalInput,
 } from "@/modules/categories/categories.schema";
-import type { CategoryWithGoal } from "@/modules/categories/categories.repository";
-import type { AppLogger } from "@/shared/core/types/logger";
+import type { CategoryWithGoal } from "@/modules/categories/categories.types";
 
 export async function createCategory(
   userId: string,
   data: CreateCategoryInput,
-  log: AppLogger,
 ): Promise<CategoryWithGoal> {
-  try {
-    const category = await repository.createCategory({
-      userId,
-      name: data.name,
-      color: data.color,
-      icon: data.icon,
-    });
+  const category = await repository.createCategory({
+    userId,
+    name: data.name,
+    color: data.color,
+    icon: data.icon,
+  });
 
-    if (!category) {
-      throw new InfrastructureError("categories");
-    }
-
-    return category;
-  } catch (error) {
-    if (error instanceof InfrastructureError) {
-      log.error({ userId }, "Failed to create category");
-    }
-    throw error;
-  }
+  return category!;
 }
 
 export async function listCategories(userId: string) {
@@ -100,7 +83,6 @@ export async function upsertBudgetGoal(
   userId: string,
   categoryId: string,
   data: CreateBudgetGoalInput,
-  log: AppLogger,
 ) {
   const category = await repository.findCategoryById(userId, categoryId);
 
@@ -115,12 +97,7 @@ export async function upsertBudgetGoal(
     period: data.period,
   });
 
-  if (!goal) {
-    log.error({ userId, categoryId }, "Failed to upsert budget goal");
-    throw new InfrastructureError("categories");
-  }
-
-  return goal;
+  return goal!;
 }
 
 export async function deleteBudgetGoal(userId: string, categoryId: string) {

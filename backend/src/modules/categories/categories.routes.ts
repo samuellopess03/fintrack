@@ -4,13 +4,15 @@ import {
   categoryParamsSchema,
   categoriesListResponse,
   createCategorySchema,
-  errorResponse,
   updateCategorySchema,
-  validationErrorResponse,
   createBudgetGoalSchema,
   budgetGoalDataResponse,
   categorySimpleResponse,
 } from "@/modules/categories/categories.schema";
+import {
+  errorResponse,
+  validationErrorResponse,
+} from "@/shared/core/errors/error.schema";
 import {
   createCategory,
   listCategories,
@@ -98,7 +100,6 @@ const categoriesRoutes: FastifyPluginAsyncZod = async (fastify) => {
       const category = await createCategory(
         getUserId(request),
         request.body,
-        fastify.log,
       );
 
       return reply.status(201).send({
@@ -182,10 +183,7 @@ const categoriesRoutes: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     async (request, reply) => {
-      const goal = await getBudgetGoal(
-        getUserId(request),
-        request.params.id,
-      );
+      const goal = await getBudgetGoal(getUserId(request), request.params.id);
 
       return reply.status(200).send({
         data: goal,
@@ -215,7 +213,6 @@ const categoriesRoutes: FastifyPluginAsyncZod = async (fastify) => {
         getUserId(request),
         request.params.id,
         request.body,
-        fastify.log,
       );
 
       return reply.status(200).send({

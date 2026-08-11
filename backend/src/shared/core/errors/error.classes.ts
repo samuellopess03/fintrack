@@ -39,6 +39,12 @@ export class ForbiddenError extends AppError {
   }
 }
 
+export class RateLimitError extends AppError {
+  constructor(message = "Too many requests, please try again later") {
+    super(message, 429, "RATE_LIMITED");
+  }
+}
+
 export class InfrastructureError extends AppError {
   constructor(service: string) {
     super(`Service unavailable: ${service}`, 503, "SERVICE_UNAVAILABLE");

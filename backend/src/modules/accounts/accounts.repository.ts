@@ -1,29 +1,12 @@
 import { and, desc, eq, getTableColumns, sql } from "drizzle-orm";
-import type { AccountType } from "@/shared/platform/database/enums";
 import { db, type DbClient } from "@/shared/platform/database/client";
-import { accounts, Account } from "@/shared/platform/database/schema/accounts";
+import { accounts } from "@/shared/platform/database/schema/accounts";
 import { transactions } from "@/shared/platform/database/schema/transactions";
-import { InfrastructureError } from "@/shared/core/errors";
-
-export type AccountWithBalance = Account & {
-  balance: string;
-};
-
-export type CreateAccountData = {
-  userId: string;
-  name: string;
-  type: AccountType;
-  currency: string;
-  color: string;
-  initialBalance: number;
-};
-
-export type UpdateAccountData = {
-  name?: string;
-  type?: AccountType;
-  currency?: string;
-  color?: string;
-};
+import type {
+  AccountWithBalance,
+  CreateAccountData,
+} from "@/modules/accounts/accounts.types";
+import type { UpdateAccountInput } from "@/modules/accounts/accounts.schema";
 
 type QueryOptions = {
   tx?: DbClient;
@@ -112,31 +95,23 @@ export async function createAccount(data: CreateAccountData) {
       })
       .returning();
 
-    if (!created) {
-      throw new InfrastructureError("accounts");
-    }
-
     if (data.initialBalance > 0) {
       await createOpeningBalanceTransaction(
         {
           userId: data.userId,
-          accountId: created.id,
+          accountId: created!.id,
           amount: data.initialBalance,
         },
         tx,
       );
     }
 
-    const account = await selectAccountById(data.userId, created.id, {
+    const account = await selectAccountById(data.userId, created!.id, {
       tx,
       includeArchived: true,
     });
 
-    if (!account) {
-      throw new InfrastructureError("accounts");
-    }
-
-    return account;
+    return account!;
   });
 }
 
@@ -191,7 +166,7 @@ export async function findAccountById(
 export async function updateAccount(
   userId: string,
   accountId: string,
-  data: UpdateAccountData,
+  data: UpdateAccountInput,
 ) {
   return db.transaction(async (tx) => {
     const [updated] = await tx

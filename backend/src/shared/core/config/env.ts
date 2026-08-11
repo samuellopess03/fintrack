@@ -29,6 +29,9 @@ const envSchema = z.object({
     .default("info"),
   OTEL_SERVICE_NAME: z.string().trim().min(1).default("fintrack-api"),
   OTEL_COLLECTOR_HOST: z.string().trim().min(1).default("otel-collector"),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(60),
+  AUTH_LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+  AUTH_REGISTER_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
 });
 
 export const env = envSchema.parse(process.env);

@@ -49,18 +49,3 @@ export const logoutDataResponse = withMeta(
     message: z.string(),
   }),
 );
-
-export const errorResponse = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-  }),
-});
-
-export const validationErrorResponse = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-    details: z.any().optional(),
-  }),
-});

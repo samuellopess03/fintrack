@@ -4,10 +4,12 @@ import {
   accountParamsSchema,
   accountsListResponse,
   createAccountSchema,
-  errorResponse,
   updateAccountSchema,
-  validationErrorResponse,
 } from "@/modules/accounts/accounts.schema";
+import {
+  errorResponse,
+  validationErrorResponse,
+} from "@/shared/core/errors/error.schema";
 import {
   archiveAccount,
   createAccount,
@@ -92,7 +94,6 @@ const accountsRoutes: FastifyPluginAsyncZod = async (fastify) => {
       const account = await createAccount(
         getUserId(request),
         request.body,
-        fastify.log,
       );
 
       return reply.status(201).send({

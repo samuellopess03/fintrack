@@ -80,21 +80,6 @@ export const budgetGoalResponse = z.object({
 
 export const budgetGoalDataResponse = withMeta(budgetGoalResponse);
 
-export const errorResponse = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-  }),
-});
-
-export const validationErrorResponse = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-    details: z.any().optional(),
-  }),
-});
-
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
 export type CategoryParamsInput = z.infer<typeof categoryParamsSchema>;

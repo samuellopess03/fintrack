@@ -4,24 +4,15 @@ import * as repository from "@/modules/auth/auth.repository";
 import { seedDefaultCategories } from "@/modules/categories/categories.repository";
 import { ConflictError, UnauthorizedError } from "@/shared/core/errors";
 import type { AppLogger } from "@/shared/core/types/logger";
-
-export type AuthResult = {
-  id: string;
-  email: string;
-  name: string;
-  createdAt: Date;
-};
+import type { AuthResult } from "@/modules/auth/auth.types";
+import type { RegisterInput, LoginInput } from "@/modules/auth/auth.schema";
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
 export async function registerUser(
-  data: {
-    email: string;
-    name: string;
-    password: string;
-  },
+  data: RegisterInput,
   log: AppLogger,
 ): Promise<AuthResult> {
   const existing = await repository.findByEmail(data.email);
@@ -46,10 +37,7 @@ export async function registerUser(
   return user;
 }
 
-export async function loginUser(data: {
-  email: string;
-  password: string;
-}): Promise<AuthResult> {
+export async function loginUser(data: LoginInput): Promise<AuthResult> {
   const user = await repository.findByEmail(data.email);
 
   if (!user) {

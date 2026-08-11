@@ -2,7 +2,12 @@ import { eq, and, isNull, gt } from "drizzle-orm";
 import { db, type DbClient } from "@/shared/platform/database/client";
 import { users } from "@/shared/platform/database/schema/users";
 import { refreshTokens } from "@/shared/platform/database/schema/refresh-tokens";
-import { UnauthorizedError, InfrastructureError } from "@/shared/core/errors";
+import { UnauthorizedError } from "@/shared/core/errors";
+import type {
+  CreateUserData,
+  CreateRefreshTokenData,
+  RotateRefreshTokenData,
+} from "@/modules/auth/auth.types";
 
 // ── Internals (accept tx for transaction reuse) ──
 
@@ -20,14 +25,7 @@ async function _findByEmail(email: string, tx?: DbClient) {
   return user ?? null;
 }
 
-async function _create(
-  data: {
-    email: string;
-    name: string;
-    passwordHash: string;
-  },
-  tx?: DbClient,
-) {
+async function _create(data: CreateUserData, tx?: DbClient) {
   const client = getClient(tx);
   const [user] = await client.insert(users).values(data).returning({
     id: users.id,
@@ -35,18 +33,11 @@ async function _create(
     name: users.name,
     createdAt: users.createdAt,
   });
-  if (!user) {
-    throw new InfrastructureError("auth");
-  }
-  return user;
+  return user!;
 }
 
 async function _createRefreshToken(
-  data: {
-    userId: string;
-    tokenHash: string;
-    expiresAt: Date;
-  },
+  data: CreateRefreshTokenData,
   tx?: DbClient,
 ) {
   const client = getClient(tx);
@@ -91,19 +82,11 @@ export async function findByEmail(email: string) {
   return _findByEmail(email);
 }
 
-export async function create(data: {
-  email: string;
-  name: string;
-  passwordHash: string;
-}) {
+export async function create(data: CreateUserData) {
   return _create(data);
 }
 
-export async function createRefreshToken(data: {
-  userId: string;
-  tokenHash: string;
-  expiresAt: Date;
-}) {
+export async function createRefreshToken(data: CreateRefreshTokenData) {
   await _createRefreshToken(data);
 }
 
@@ -119,12 +102,9 @@ export async function revokeAllUserRefreshTokens(userId: string) {
   await _revokeAllUserRefreshTokens(userId);
 }
 
-export async function rotateRefreshToken(data: {
-  oldHash: string;
-  userId: string;
-  newHash: string;
-  expiresAt: Date;
-}): Promise<void> {
+export async function rotateRefreshToken(
+  data: RotateRefreshTokenData,
+): Promise<void> {
   await db.transaction(async (tx) => {
     const stored = await _findValidRefreshToken(data.oldHash, tx);
     if (!stored) {

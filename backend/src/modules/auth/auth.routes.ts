@@ -1,14 +1,18 @@
 import { randomUUID } from "node:crypto";
+import type { FastifyReply } from "fastify";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import type { CookieSerializeOptions } from "@fastify/cookie";
 import {
   registerSchema,
   loginSchema,
   authDataResponse,
   refreshDataResponse,
   logoutDataResponse,
+} from "@/modules/auth/auth.schema";
+import {
   errorResponse,
   validationErrorResponse,
-} from "@/modules/auth/auth.schema";
+} from "@/shared/core/errors/error.schema";
 import {
   registerUser,
   loginUser,
@@ -19,14 +23,20 @@ import {
 import { env } from "@/shared/core/config/env";
 import { UnauthorizedError } from "@/shared/core/errors";
 
+const REFRESH_TOKEN_COOKIE_OPTIONS: CookieSerializeOptions = {
+  path: "/",
+  httpOnly: true,
+  secure: env.NODE_ENV === "production",
+  sameSite: "strict",
+};
+
+const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60; // 7 days in seconds
+
 const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
-  const setRefreshTokenCookie = (reply: any, token: string) => {
+  const setRefreshTokenCookie = (reply: FastifyReply, token: string) => {
     reply.setCookie("refreshToken", token, {
-      path: "/",
-      httpOnly: true,
-      secure: env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      ...REFRESH_TOKEN_COOKIE_OPTIONS,
+      maxAge: REFRESH_TOKEN_MAX_AGE,
     });
   };
 
@@ -41,6 +51,12 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
           201: authDataResponse,
           409: errorResponse,
           422: validationErrorResponse,
+        },
+      },
+      config: {
+        rateLimit: {
+          max: env.AUTH_REGISTER_RATE_LIMIT_MAX,
+          timeWindow: "1 hour",
         },
       },
     },
@@ -76,6 +92,12 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
           200: authDataResponse,
           401: errorResponse,
           422: validationErrorResponse,
+        },
+      },
+      config: {
+        rateLimit: {
+          max: env.AUTH_LOGIN_RATE_LIMIT_MAX,
+          timeWindow: "15 minutes",
         },
       },
     },
@@ -183,12 +205,7 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify) => {
         }
       }
 
-      reply.clearCookie("refreshToken", {
-        path: "/",
-        httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: "strict",
-      });
+      reply.clearCookie("refreshToken", REFRESH_TOKEN_COOKIE_OPTIONS);
 
       return reply.status(200).send({
         data: { message: "Logged out successfully" },
