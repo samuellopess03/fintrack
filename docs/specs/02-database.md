@@ -48,22 +48,27 @@ CREATE TABLE users (
 ```
 
 **Drizzle schema:**
+
 ```typescript
-export const users = pgTable('users', {
-  id:           uuid('id').defaultRandom().primaryKey(),
-  email:        text('email').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
-  name:         text('name').notNull(),
-  createdAt:    timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt:    timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-})
+export const users = pgTable("users", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
 ```
 
 ---
 
 ### `accounts`
 
-Represents a bank account, wallet, or credit card belonging to the user.
+Representa a conta bancária, carteira ou cartão de crédito pertencente ao usuário.
 
 ```sql
 CREATE TABLE accounts (
@@ -246,6 +251,7 @@ CREATE INDEX idx_import_jobs_status  ON import_jobs(status)
 Para o extrato de transações, usamos paginação por cursor em vez de `OFFSET`.
 
 **Query com cursor:**
+
 ```sql
 SELECT * FROM transactions
 WHERE user_id = :userId
@@ -260,6 +266,7 @@ como cursor pode pular ou duplicar registros. O par `(date, id)` é sempre
 único e garante paginação estável.
 
 **Formato da resposta:**
+
 ```json
 {
   "data": [...],
@@ -310,6 +317,7 @@ src/db/
 ```
 
 **Comandos:**
+
 ```bash
 # Gerar migration a partir do schema
 npx drizzle-kit generate
