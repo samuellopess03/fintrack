@@ -9,6 +9,14 @@ decifrar o estilo individual de quem escreveu. Consistência reduz carga cogniti
 Este documento é a fonte de verdade para naming, estrutura de commits,
 padrões de TypeScript e convenções de revisão de código.
 
+Os **princípios e padrões de design** (Clean Code, SOLID, Repository,
+Strategy, Unit of Work etc.) que fundamentam essas convenções estão mapeados
+no [Guia de Engenharia](../guides/engineering-principles.md) — este doc
+cobre o *estilo*; o guia cobre o *design*. As regras de orientação entre os
+módulos (que módulo pode importar o quê) são descritas na referência do
+[ESLint Boundaries](../guides/eslint-boundaries.md) e verificadas
+automaticamente pelo `npm run lint`.
+
 ---
 
 ## TypeScript — configuração strict
@@ -364,3 +372,85 @@ docs/add-security-spec
 refactor/extract-categorization-chain
 chore/update-drizzle-to-0-30
 ```
+
+---
+
+## Versionamento de releases com tags
+
+Branches descrevem **onde o código está** (integração, correção, feature);
+tags descrevem **o que já é uma versão entregável**. `main` continua sendo
+a fonte de verdade do código em produção, mas cada release publicado
+recebe uma tag anotada — assim o histórico de versões é imutável,
+consultável (`git tag --sort=-v:refname`) e serve de âncora para
+rollback, changelog e audit trail, sem depender de branches de suporte.
+
+### Formato das tags — SemVer
+
+```
+v<MAJOR>.<MINOR>.<PATCH>
+```
+
+| Segmento | Incrementar quando                                        | Exemplo       |
+|----------|-----------------------------------------------------------|---------------|
+| `MAJOR`  | Breaking change: mudança incompatível de API/banco/contrato | `v2.0.0`      |
+| `MINOR`  | Nova funcionalidade retrocompatível (`feat:`)              | `v1.3.0`      |
+| `PATCH`  | Correção de bug sem mudança de interface (`fix:`)           | `v1.3.1`      |
+
+Pré-releases antes de estabilizar:
+
+```
+v1.4.0-rc.1    release candidate para homologação
+v1.4.0-beta.2  build de teste, não recomendado para produção
+```
+
+O número da versão deve refletir o que houve desde a tag anterior:
+só `fix:` → patch; qualquer `feat:` → minor; breaking change → major.
+Isso é o que torna a geração automática de changelog confiável.
+
+### Como criar
+
+Tags de release são sempre **anotadas** (`-a`), nunca lightweight —
+a anotação guarda autor, data e mensagem da release:
+
+```
+git tag -a v1.3.0 -m "Release 1.3.0 — importação OFX e categorização por regras"
+git push origin v1.3.0
+```
+
+`git push origin --tags` é evitado: cada tag é enviada explicitamente,
+para nunca publicar tags intermediárias de trabalho por acidente.
+
+### Regras
+
+- Tag só é criada **sobre o `main`** (ou sobre um branch de hotfix derivado
+  dele, no caso de correção urgente em produção), nunca sobre `develop`.
+- O merge de `develop` → `main` encerra a preparação da release; a tag
+  formaliza o momento: cada release é um merge de `main` + uma tag.
+- Tags são **imutáveis**: uma tag publicada não é movida nem deletada.
+  Se o conteúdo da release estava errado, a correção entra em uma
+  **nova** tag (`v1.3.1`), nunca em `v1.3.0` reescrita — quem consome
+  versões por tag precisa poder confiar que v1.3.0 é sempre o mesmo código.
+- A versão da tag fecha o loop com os Conventional Commits: o ML dos
+  commits entre duas tags determina o próximo número de versão e
+  alimenta o changelog correspondente.
+
+### Histórico visual
+
+```
+main:     ──●───●───●───●───●───●──  (merges de develop)
+            │       │       │
+tags:       v1.2.0  v1.2.1  v1.3.0
+```
+
+### Fluxo de release
+
+1. Acrumular PRs mergeados em `develop`.
+2. Quando há corte de release, `develop` é mergeado em `main` via PR
+   (`chore(release): merge develop for v1.3.0`), com changelog revisado.
+3. CI roda o pipeline completo no `main` (lint, testes, build).
+4. Verde → criar e publicar a tag `v1.3.0` a partir do `main`.
+5. O publish/deploy de produção é disparado **pela tag** (ex.: workflow
+   do CI com gatilho `on: push: tags: ['v*']`), não por push manual —
+   a tag é a fonte de verdade do deploy, e nunca o contrário.
+6. Hotfix urgente: branch `hotfix/v1.3.1` a partir de `main`, corrigido,
+   mergeado de volta em `main` **e** em `develop`, e taggueado.
