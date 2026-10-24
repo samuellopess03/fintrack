@@ -151,47 +151,79 @@ Na v1, esse cenário não existe.
 
 Os tipos de domínio são definidos em `src/types/api.types.ts` e espelham
 os schemas do backend. Eles não são gerados automaticamente (ex: via OpenAPI)
-na v1 — são mantidos manualmente.
+na v1 — são mantidos manualmente. A adoção do monorepo
+([ADR-013](ADR-013-monorepo.md)) não altera isso: não há pacote de tipos
+compartilhado entre backend e frontend na v1.
 
 ```typescript
 // src/types/api.types.ts
 
 export interface Transaction {
-  id:          string
-  accountId:   string
-  categoryId:  string | null
-  description: string
-  amount:      string   // string porque vem como NUMERIC do PostgreSQL
-  type:        'income' | 'expense'
-  date:        string   // ISO date string
-  createdAt:   string
+  id: string;
+  accountId: string;
+  categoryId: string | null;
+  description: string;
+  amount: string; // string porque vem como NUMERIC do PostgreSQL
+  type: "income" | "expense";
+  date: string; // ISO date string
+  createdAt: string;
 }
 
 export interface PaginatedResponse<T> {
-  data:       T[]
+  data: T[];
   pagination: {
-    next_cursor: string | null
-    has_more:    boolean
-    count:       number
-  }
+    next_cursor: string | null;
+    has_more: boolean;
+    count: number;
+  };
 }
 ```
 
-**Decisão futura:** geração automática de tipos a partir do schema OpenAPI
-(usando `openapi-typescript`) elimina a manutenção manual, mas adiciona
-etapa ao pipeline de build. Candidato para v2.
+### Caminho preferido para v2: geração via OpenAPI, não pacote compartilhado
+
+Para eliminar a manutenção manual de `api.types.ts`, duas abordagens foram
+avaliadas:
+
+1. **Geração via OpenAPI** (usando `openapi-typescript` a partir da spec que o
+   backend já expõe via `@fastify/swagger` + `fastify-type-provider-zod`) —
+   **caminho preferido**.
+2. **Pacote de tipos compartilhado** (`@fintrack/shared`) importado por backend
+   e frontend — rejeitado (ver "Alternativas rejeitadas" abaixo).
+
+**Razões para a preferência:**
+
+- **A fonte única de verdade é o contrato, não os tipos internos.** Com a
+  geração via OpenAPI, quem manda são os schemas Zod do backend; os tipos do
+  frontend passam a ser um artefato gerado. O backend não sabe que o frontend
+  existe — não há acoplamento entre os pacotes, apenas um artefato alimentado
+  pela spec.
+- **Tipos internos do backend mentem sobre o wire format.** Na rede não existe
+  `Date` (o `createdAt: z.date()` de `transactionResponse` chega como string
+  ISO) e o `amount` chega como string (NUMERIC do PostgreSQL). Os tipos
+  gerados a partir da spec OpenAPI descrevem o formato trafegado fielmente;
+  tipos derivados das estruturas internas do backend não fazem isso.
+- **Sem acoplamento de build entre pacotes.** Com pacote compartilhado, toda
+  mudança de schema no backend quebra o build do frontend. Com geração, a
+  mudança no backend só vira mudança no frontend quando o **contrato**
+  realmente muda — e o drift é detectado em CI, comparando o artefato
+  gerado com o commitado.
+
+O custo é uma etapa a mais no pipeline de build (gerar tipos a partir da
+spec). Candidato para v2, quando a API estiver estabilizada.
 
 ---
 
 ## Alternativas rejeitadas
 
 ### Redux Toolkit para todo o estado
+
 - Overhead de boilerplate (slices, actions, selectors) para um projeto onde
   o server state (dominante) é melhor gerenciado pelo TanStack Query.
 - Combinar Redux com TanStack Query cria dois sistemas de estado com
   responsabilidades sobrepostas.
 
 ### Next.js (App Router / SSR)
+
 - O FinTrack é um dashboard privado atrás de autenticação — não há benefício
   de SEO ou First Contentful Paint para uma tela de login.
 - Server Components e Server Actions adicionam complexidade de isomorfismo
@@ -199,13 +231,6 @@ etapa ao pipeline de build. Candidato para v2.
   para um dashboard autenticado.
 - Vite + React SPA é mais simples, mais rápido para iterar e suficiente para
   o caso de uso.
-
-### Monorepo com tipos compartilhados (backend + frontend)
-- Compartilhar tipos TypeScript entre backend e frontend via monorepo (Turborepo,
-  Nx) elimina a duplicação de `api.types.ts`, mas adiciona complexidade de
-  build e gerenciamento de workspace.
-- O benefício é real mas o custo de setup é alto para v1. Candidato para v2
-  junto com a geração via OpenAPI.
 
 ---
 

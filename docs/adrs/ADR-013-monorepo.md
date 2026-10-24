@@ -117,6 +117,16 @@ um com seu entrypoint, rodando como serviços independentes no ECS.
 A escolha pelo monorepo é pragmática: um desenvolvedor trabalhando no
 projeto inteiro quer um único contexto de trabalho.
 
+> **Nota:** o monorepo aqui adotado é apenas organização de repositório
+> (npm workspaces). Ele **não** inclui um pacote de tipos TypeScript
+> compartilhado entre backend e frontend — `api.types.ts` é mantido
+> manualmente no frontend
+> ([ADR-010](ADR-010-frontend-architecture.md)). Quando um ponto único
+> de verdade para os tipos se tornar necessário (v2), o caminho preferido
+> é **gerar os tipos do frontend a partir da spec OpenAPI**
+> exposta pelo backend (`openapi-typescript`), e não criar um pacote
+> de workspace compartilhado — ver ADR-010.
+
 ### npm workspaces sem Turborepo/Nx
 
 npm workspaces permitem:
