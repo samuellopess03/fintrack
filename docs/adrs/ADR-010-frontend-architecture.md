@@ -87,10 +87,17 @@ entre TanStack Query e os componentes React. Os componentes não chamam
 `{ data, isLoading, error }` com os tipos corretos para o domínio.
 
 Isso tem dois benefícios:
+
 1. Os detalhes do TanStack Query (queryKey, staleTime, refetchInterval) ficam
    encapsulados e não vazam para os componentes.
 2. Trocar TanStack Query por outra solução no futuro é uma mudança nos hooks,
    não nos componentes.
+
+> **Princípios por trás desta decisão:** este desenho é a aplicação do
+> **Dependency Inversion (SOLID)** entre UI e state management — a fronteira
+> dos hooks é a "abstração" da qual a UI depende. O mapa completo de
+> princípios do projeto está no
+> [Guia de Engenharia](../guides/engineering-principles.md).
 
 ### Estrutura de pastas: páginas + componentes globais
 

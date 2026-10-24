@@ -81,6 +81,11 @@ scroll contínuo ou navegação sequencial — isso não é uma limitação prá
 
 ## Decisão 2 — Unit of Work para processamento atômico de extratos
 
+> **Padrão nomeado:** esta decisão implementa o padrão **Unit of Work**
+> (Martin Fowler, *Patterns of Enterprise Application Architecture*). O
+> contexto no mapa de padrões está no
+> [Guia de Engenharia](../guides/engineering-principles.md).
+
 ### O problema sem Unit of Work
 
 O processamento de um CSV de 500 transações sem transação de banco:
@@ -147,6 +152,10 @@ pode ser re-executado sem efeitos colaterais.
 ---
 
 ## Decisão 3 — Fail-Fast na validação de variáveis de ambiente
+
+> **Padrão nomeado:** a estratégia abaixo é o **Fail-Fast** (cada camada
+> rejeita imediatamente um estado inválido em vez de propagar). Ver mapa no
+> [Guia de Engenharia](../guides/engineering-principles.md).
 
 ### O problema sem validação de env
 

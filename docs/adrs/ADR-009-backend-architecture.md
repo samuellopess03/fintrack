@@ -9,6 +9,7 @@
 ## Contexto
 
 O backend do FinTrack precisa ser organizado de uma forma que:
+
 - Permita encontrar qualquer arquivo relacionado a um domínio (ex: transações)
   em um único lugar.
 - Evite acoplamento entre domínios — mudar a lógica de contas não deve exigir
@@ -31,6 +32,7 @@ onde cada domínio de negócio agrupa todas as suas camadas técnicas.
 ## O que isso significa na prática
 
 ### Organização por camada técnica (rejeitada)
+
 Agrupa todos os arquivos de um mesmo tipo técnico juntos, independente do domínio:
 
 ```
@@ -54,6 +56,7 @@ arquivos em `controllers/`, `services/` e `repositories/` — o contexto mental
 é fragmentado.
 
 ### Organização por domínio/módulo (adotada)
+
 Cada domínio é uma pasta vertical que contém todas as suas camadas:
 
 ```
@@ -85,6 +88,7 @@ src/
 ## Justificativas
 
 ### Coesão por domínio, não por tipo técnico
+
 A organização por módulo espelha o vocabulário do negócio, não a taxonomia
 técnica. Um desenvolvedor novo no projeto entende a estrutura lendo os nomes
 das pastas (`accounts`, `transactions`, `imports`) antes mesmo de abrir
@@ -92,18 +96,21 @@ qualquer arquivo. Organizado por camada técnica, os nomes (`controllers`,
 `services`) não dizem nada sobre o que o sistema faz.
 
 ### Limite natural de dependência
+
 Cada módulo exporta apenas sua interface pública (tipicamente o service).
 O módulo de `reports` pode importar `TransactionsService`, mas nunca acessa
 diretamente queries do módulo de transações. Isso cria limites de dependência
 explícitos que o TypeScript verifica em tempo de compilação.
 
 ### Facilita extração futura para microsserviços
+
 Se no futuro o módulo de `imports` crescer o suficiente para justificar um
 serviço separado, a extração é cirúrgica — o módulo já é uma unidade coesa
 com suas próprias dependências mapeadas. Com organização por camada técnica,
 extrair um domínio exigiria caçar arquivos espalhados em múltiplas pastas.
 
 ### Testes colocados ao lado do código
+
 Os arquivos de teste vivem dentro da pasta do módulo (`accounts.test.ts`
 ao lado de `accounts.service.ts`). Isso evita a duplicação de estrutura
 de pastas em um diretório `__tests__/` separado e torna óbvio quando um
@@ -135,17 +142,24 @@ Isso evita o anti-pattern de `shared/` virar uma gaveta de tudo.
 
 Cada arquivo dentro de um módulo tem uma responsabilidade única e clara:
 
-| Arquivo              | Responsabilidade                                                     | Pode importar         |
-|----------------------|----------------------------------------------------------------------|-----------------------|
-| `*.routes.ts`        | Definir rotas, validar input com Zod, chamar o service, serializar response | Apenas o service     |
-| `*.service.ts`       | Lógica de negócio, orquestração de repositório + cache + fila        | Repository, Cache, Queue |
-| `*.repository.ts`    | Queries Drizzle ao banco de dados                                    | Apenas Drizzle client |
-| `*.schema.ts`        | Schemas Zod de request/response                                      | Apenas Zod            |
+| Arquivo           | Responsabilidade                                                            | Pode importar            |
+| ----------------- | --------------------------------------------------------------------------- | ------------------------ |
+| `*.routes.ts`     | Definir rotas, validar input com Zod, chamar o service, serializar response | Apenas o service         |
+| `*.service.ts`    | Lógica de negócio, orquestração de repositório + cache + fila               | Repository, Cache, Queue |
+| `*.repository.ts` | Queries Drizzle ao banco de dados                                           | Apenas Drizzle client    |
+| `*.schema.ts`     | Schemas Zod de request/response                                             | Apenas Zod               |
 
 **Regra de dependência:** a seta de dependência aponta sempre para baixo
 (`routes → service → repository`). Nenhuma camada importa de uma camada
 acima dela. O service nunca importa `FastifyRequest`. O repository nunca
 chama o cache.
+
+> **Princípios por trás desta regra:** cada camada tem uma única razão para
+> mudar (**SRP**) e depende de contratos, não de implementações alheias
+> (**DIP**). A tabela acima é literalmente a configuração de fronteiras
+> verificada pelo ESLint — background e detalhes no
+> [Guia de Engenharia](../guides/engineering-principles.md) e na
+> [referência do ESLint Boundaries](../guides/eslint-boundaries.md).
 
 ---
 
@@ -173,6 +187,7 @@ src/worker/
 ## Alternativas rejeitadas
 
 ### Organização por camada técnica (MVC clássico)
+
 - Fragmenta o contexto de trabalho por domínio.
 - Cresce de forma difícil de navegar: `services/` com 15 arquivos não diz
   quais domínios existem no sistema sem ler todos os nomes.
@@ -180,6 +195,7 @@ src/worker/
   de detectar.
 
 ### Clean Architecture (ports & adapters)
+
 - Introduz muitas abstrações (use cases, entities, repositories como interfaces
   com implementações separadas) que adicionam cerimônia para um projeto de
   escopo pessoal.
