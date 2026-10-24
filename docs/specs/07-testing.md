@@ -19,7 +19,7 @@ e no **pipeline de importação** (integração completa do upload ao banco).
 // jest.config.mjs
 export default {
   testEnvironment: "node",
-  roots: ["<rootDir>/src"],
+  roots: ["<rootDir>/test"],
   testMatch: ["**/*.test.ts"],
   transform: {
     "^.+\\.ts$": ["ts-jest", { useESM: true, tsconfig: "tsconfig.json" }],
@@ -41,7 +41,7 @@ Esses testes não tocam banco, Redis ou RabbitMQ.
 São puros: entrada → processamento → saída.
 
 ```typescript
-// src/worker/categorization/__tests__/chain.test.ts
+// test/worker/categorization/chain.unit.test.ts
 
 import { buildChain } from "../chain.builder";
 import { CategorizationRule } from "@/db/schema";
@@ -139,7 +139,7 @@ describe("Chain of Responsibility — Categorização", () => {
 ## Testes Unitários — Parsers
 
 ```typescript
-// src/worker/parsers/__tests__/csv.parser.test.ts
+// test/worker/parsers/csv.parser.unit.test.ts
 
 import { CsvParser } from "../csv.parser";
 import path from "path";
@@ -185,9 +185,9 @@ Esses testes usam um banco PostgreSQL real (rodando via Docker no CI)
 e verificam o pipeline completo.
 
 ```typescript
-// src/worker/processors/__tests__/import.processor.integration.test.ts
+// test/worker/processors/import.processor.int.test.ts
 
-import { buildTestDb } from "@/test/helpers/db";
+import { buildTestDb } from "../../helpers/db";
 import { processImportJob } from "../import.processor";
 import { importJobs, transactions } from "@/db/schema";
 import { eq, count } from "drizzle-orm";
@@ -308,10 +308,10 @@ describe("Import Pipeline — integração", () => {
 ## Testes de Integração — Endpoints HTTP
 
 ```typescript
-// src/modules/transactions/__tests__/transactions.routes.test.ts
+// test/modules/transactions/transactions.routes.int.test.ts
 
 import { buildApp } from "@/app";
-import { buildTestDb, seedUser } from "@/test/helpers/db";
+import { buildTestDb, seedUser } from "../../helpers/db";
 
 describe("POST /transactions", () => {
   let app: FastifyInstance;
@@ -377,7 +377,7 @@ describe("POST /transactions", () => {
 ## Helpers de teste
 
 ```typescript
-// src/test/helpers/db.ts
+// test/helpers/db.ts
 
 export function buildTestDb() {
   return drizzle(process.env.TEST_DATABASE_URL!, { schema });
@@ -423,7 +423,7 @@ export async function seedUser(app: FastifyInstance): Promise<string> {
 
 ## Fixtures de teste
 
-Os arquivos de fixture em `src/test/fixtures/` simulam extratos reais (a criar):
+Os arquivos de fixture em `test/fixtures/` simulam extratos reais (a criar):
 
 | Arquivo                       | Conteúdo                                     |
 | ----------------------------- | -------------------------------------------- |
