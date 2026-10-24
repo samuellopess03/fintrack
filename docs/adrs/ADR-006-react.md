@@ -1,7 +1,7 @@
 # ADR-006 — React como biblioteca de UI do frontend
 
 - **Status:** Aceito
-- **Data:** 2025
+- **Data:** 2025 (atualizado em 2026 — versão de React revisada de 18 para 19)
 - **Autores:** Time FinTrack
 
 ---
@@ -9,6 +9,7 @@
 ## Contexto
 
 O FinTrack precisa de uma interface de usuário que suporte:
+
 - Dashboards com gráficos atualizados em tempo real (relatórios, saldos).
 - Polling de status de jobs de importação sem recarregar a página.
 - Formulários complexos com validação (transações, regras de categorização).
@@ -21,13 +22,14 @@ As opções avaliadas foram React, Vue.js e Angular.
 
 ## Decisão
 
-Adotamos o **React 18** com **TypeScript** como biblioteca de UI do frontend.
+Adotamos o **React 19** com **TypeScript** como biblioteca de UI do frontend.
 
 ---
 
 ## Justificativas
 
 ### Modelo mental de componentes e composição
+
 O React introduz um modelo de UI declarativo baseado em componentes puros:
 dado um estado `S`, a UI é sempre `f(S)`. Isso torna o comportamento
 previsível e testável — especialmente importante para o dashboard financeiro,
@@ -39,6 +41,7 @@ mágica — o que vai onde é rastreável pelo compilador TypeScript sem necessi
 de conhecer convenções específicas do framework.
 
 ### Ecossistema para casos de uso do projeto
+
 Os casos de uso do FinTrack mapeiam diretamente para bibliotecas maduras do
 ecossistema React:
 
@@ -51,21 +54,42 @@ ecossistema React:
 - **React Router v7:** roteamento SPA com suporte a loaders tipados.
 
 ### TypeScript como cidadão de primeira classe
+
 O React tem suporte TypeScript nativo e sem fricção. Os tipos de `useState`,
 `useEffect`, `useRef` e props de componentes são inferidos automaticamente
 na maioria dos casos. Isso é importante porque o frontend compartilha os
 mesmos tipos de domínio do backend (via `api.types.ts`), e essa sincronia
 precisa ser mantida pelo compilador.
 
-### React 18 — Concurrent Features
-O React 18 introduz `useTransition` e `useDeferredValue`, que permitem
-marcar atualizações de estado como não urgentes. Para o FinTrack, isso
-é relevante ao filtrar o extrato com centenas de transações: a digitação
-no campo de busca permanece fluida enquanto a lista é atualizada em background.
+### React 19 — Concurrent features e Actions
+
+O React 18 introduziu o modelo de renderização concorrente com
+`useTransition` e `useDeferredValue`, que permitem marcar atualizações de
+estado como não urgentes. Para o FinTrack, isso é relevante ao filtrar o
+extrato com centenas de transações: a digitação no campo de busca permanece
+fluida enquanto a lista é atualizada em background.
+
+O React 19 estende esse modelo com as **Actions**:
+
+- **`useActionState`:** gerencia o ciclo submit → pending → resultado de
+  formulários dentro do componente. Os formulários de transação e regras de
+  categorização (com validação Zod compartilhada do backend) se beneficiam do
+  estado de "enviando" e da exibição de erros de validação sem
+  `isSubmitting` manual.
+- **`useOptimistic`:** atualizações otimistas de lista (novo lançamento de
+  transação aparecendo imediatamente no extrato, revertida em caso de erro)
+  sem lógica manual de rollback.
+- **`ref` como prop:** componentes de UI customizados (inputs de formulário,
+  linhas de tabela com foco programático) aceitam `ref` diretamente, sem o
+  wrapper `forwardRef`.
+- **`use()`:** leitura de promises e context de forma condicional, útil para
+  promises de dados pré-carregados pelo TanStack Query.
 
 ### Separação entre server state e client state
+
 O React por si só não dita como gerenciar estado. Essa flexibilidade permite
 a separação clara que o projeto adota:
+
 - **Server state** (dados que vêm da API): gerenciado pelo TanStack Query.
 - **Client state** (UI local: modal aberto, filtros ativos): `useState` e
   Context API — sem biblioteca adicional na v1.
@@ -79,6 +103,7 @@ da geração anterior de SPAs.
 ## Alternativas rejeitadas
 
 ### Vue.js 3
+
 - Composition API é conceitualmente similar ao React Hooks — a diferença de
   produtividade é marginal para um desenvolvedor que conhece ambos.
 - O ecossistema de componentes de gráficos (Vue equivalente ao Recharts) é
@@ -89,6 +114,7 @@ da geração anterior de SPAs.
   familiaridade da equipe.
 
 ### Angular
+
 - Framework full-stack com opinionated structure — inclui HTTP client, forms,
   DI container e router embutidos. Para o FinTrack, onde cada uma dessas
   responsabilidades já tem uma biblioteca dedicada escolhida (TanStack Query,
