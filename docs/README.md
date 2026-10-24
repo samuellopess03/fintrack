@@ -8,7 +8,11 @@
 docs/
 ├── README.md
 │
-├── spec/                                 ← o quê construir e como estruturar
+├── guides/                                  ← como julgamos código (estratégia de engenharia)
+│   ├── engineering-principles.md            ← mapa Clean Code/SOLID/padrões → ADRs, critérios de abstração
+│   └── eslint-boundaries.md                 ← referência das regras de fronteira forçadas no ESLint
+│
+├── specs/                                   ← o quê construir e como estruturar
 │   │
 │   │  FUNDAÇÃO
 │   ├── 00-overview.md                   ← visão geral, objetivos, escopo e fluxo principal
@@ -50,7 +54,7 @@ docs/
     ├── ADR-005-jest-ts-jest.md          ← Jest+TS-Jest vs Vitest
     ├── ADR-006-react.md                 ← React vs Vue vs Angular
     ├── ADR-007-redis-cache.md           ← Redis vs Memcached vs in-process
-    ├── ADR-008-prometheus-grafana.md    ← Prometheus+Grafana vs Datadog vs OTel+Jaeger
+    ├── ADR-008-observabilidade.md       ← Prometheus+Grafana, Loki, Tempo vs Datadog vs OTel+Jaeger
     │
     │  DECISÕES ARQUITETURAIS
     ├── ADR-009-backend-architecture.md  ← módulos por domínio vs camadas técnicas vs Clean Arch
@@ -68,13 +72,14 @@ docs/
 
 1. **SPEC-00** — Entenda o problema e o fluxo principal.
 2. **SPEC-01** — Conheça todos os requisitos.
-3. **SPEC-02** — Modele o banco de dados (fundação de tudo).
-4. **SPEC-03** — Configure o backend.
-5. **SPEC-04** — Pipeline assíncrono (peça mais complexa).
-6. **SPEC-05** — Cache com invalidação correta.
-7. **SPEC-06** — Frontend conectado à API.
-8. **SPEC-07** — Testes ao longo do desenvolvimento.
-9. **SPEC-08** → **SPEC-09** — Observabilidade e infraestrutura.
+3. **Guia de engenharia** (`guides/engineering-principles.md`) — Os princípios e padrões que orientam o código e os critérios de abstração; releia antes de revisar PRs.
+4. **SPEC-02** — Modele o banco de dados (fundação de tudo).
+5. **SPEC-03** — Configure o backend.
+6. **SPEC-04** — Pipeline assíncrono (peça mais complexa).
+7. **SPEC-05** — Cache com invalidação correta.
+8. **SPEC-06** — Frontend conectado à API.
+9. **SPEC-07** — Testes ao longo do desenvolvimento.
+10. **SPEC-08** → **SPEC-09** — Observabilidade e infraestrutura.
 
 ### Qualidades transversais
 
@@ -83,7 +88,7 @@ docs/
 - **SPEC-12** — Performance: leia para conhecer as estratégias de performance adotadas.
 - **SPEC-13** — Erros: leia para compreender como o tratamento de erros é estruturado no sistema.
 - **SPEC-14** — i18n: leia para saber como localização e internacionalização foram tratadas.
-- **SPEC-15** — Convenções: leia para se familiarizar com as convenções de código do projeto.
+- **SPEC-15** — Convenções: leia para se familiarizar com as convenções de código do projeto. O **guia de engenharia** (`guides/engineering-principles.md`) complementa esta spec com os princípios e padrões por trás das convenções.
 - **SPEC-16** — LGPD: leia para entender as práticas de privacidade e adequação à LGPD.
 - **SPEC-17** — API design: leia para conhecer os padrões de design de API do sistema.
 
