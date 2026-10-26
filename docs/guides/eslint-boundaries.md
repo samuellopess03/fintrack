@@ -93,7 +93,7 @@ Com isso ficam bloqueados, por exemplo:
 ## Regras gerais além das fronteiras
 
 Além do plugin `boundaries`, a configuração aplica (na mesma linguagem da
-[SPEC-15](../specs/15-code-conventions.md)):
+[SPEC-15](https://github.com/samuellopess03/fintrack/wiki/15-code-conventions)):
 
 - **TypeScript:** `no-explicit-any` (error), `consistent-type-imports`
   (error), `no-non-null-assertion` (warn).

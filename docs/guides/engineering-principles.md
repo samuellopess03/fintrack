@@ -20,7 +20,7 @@ e acoplado". Por isso os princípios não ganham ADR próprio — eles ganham
    mais protege manutenibilidade no longo prazo.
 
 Convenções de estilo (naming, imports, commits, formatação) ficam na
-[SPEC-15 — Convenções de Código](../specs/15-code-conventions.md). Este guia
+[SPEC-15 — Convenções de Código](https://github.com/samuellopess03/fintrack/wiki/15-code-conventions). Este guia
 não repete esse conteúdo.
 
 ---
@@ -33,7 +33,7 @@ não repete esse conteúdo.
 | **OCP** — extensível sem editar o que existe | Parsers novos entram como mais um arquivo em `parsers/`; regras de categorização entram como mais um handler na chain — sem editar os existentes | [ADR-009](../adrs/ADR-009-backend-architecture.md) — "Worker — estrutura paralela" |
 | **LSP / ISP** | Sem classes com hierarquias para violar; a preferência por funções e módulos com superfícies de exportação pequenas mantém substituição e coesão triviais | — |
 | **DIP** — depender de abstrações | Frontend: hooks de domínio fazem a UI depender do domínio, não da biblioteca (TanStack Query pode ser trocado sem tocar componentes). Backend: módulos consomem a *interface pública* (service) de outro módulo, nunca o repository dele | [ADR-010](../adrs/ADR-010-frontend-architecture.md) — "Hooks de domínio" e [ADR-009](../adrs/ADR-009-backend-architecture.md) — "Limite natural de dependência" |
-| **Clean Code** (leitura) | Naming por vocabulário de domínio, predicados booleanos, handlers de evento | [SPEC-15](../specs/15-code-conventions.md) — "Convenções de nomenclatura" |
+| **Clean Code** (leitura) | Naming por vocabulário de domínio, predicados booleanos, handlers de evento | [SPEC-15](https://github.com/samuellopess03/fintrack/wiki/15-code-conventions) — "Convenções de nomenclatura" |
 | **Clean Code** (consistência) | "Código novo lê como código existente" — siga os módulos existentes antes de inventar conceito | Este guia — "Critérios de abstração" |
 | **Repository** | `*.repository.ts` — a única camada que fala com Drizzle/PostgreSQL | [ADR-009](../adrs/ADR-009-backend-architecture.md) |
 | **Service Layer** | `*.service.ts` — orquestra repository + cache + fila; lógica de negócio mora aqui | [ADR-009](../adrs/ADR-009-backend-architecture.md) |
@@ -92,7 +92,7 @@ anterior:
 - Violação → erro no `npm run lint`, não em revisão manual.
 
 As convenções gerais de ESLint (no-console, eqeqeq, import/order,
-import/no-cycle) continuam especificadas na [SPEC-15](../specs/15-code-conventions.md).
+import/no-cycle) continuam especificadas na [SPEC-15](https://github.com/samuellopess03/fintrack/wiki/15-code-conventions).
 
 ---
 
