@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: 📖 SPECs — especificações do sistema (Wiki)
+    url: https://github.com/samuellopess03/fintrack/wiki
+    about: Consulte a Wiki (SPEC-00 a SPEC-17) antes de abrir uma issue de feature ou spike.
+  - name: 🏛️ ADRs e guias de engenharia (repositório)
+    url: https://github.com/samuellopess03/fintrack/tree/main/docs
+    about: ADRs em `docs/adrs/` e guias de engenharia em `docs/guides/` — consulte antes de abrir uma issue de ADR.

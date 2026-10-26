@@ -1,0 +1,214 @@
+# Labels do FinTrack
+#
+# Aplicar via GitHub CLI:
+#   gh label create "nome" --color "HEX" --description "desc" --repo owner/repo
+#
+# Ou importar com a ferramenta github-label-sync:
+#   npx github-label-sync --labels .github/labels.yml owner/repo
+#
+# Estrutura: cada label pertence a uma categoria identificada pelo prefixo.
+# Toda issue deve ter ao menos um label de cada categoria obrigatória:
+#   [type] + [module] + [priority]
+# Labels de [status] e [size] são adicionados conforme o trabalho avança.
+
+# ─────────────────────────────────────────────
+# TYPE — o que é essa issue / PR
+# ─────────────────────────────────────────────
+
+- name: "type: feature"
+  color: "0075CA"
+  description: "Nova funcionalidade ou melhoria planejada (tem SPEC de referência)"
+
+- name: "type: bug"
+  color: "D73A4A"
+  description: "Comportamento incorreto ou diferente do especificado"
+
+- name: "type: spike"
+  color: "E4E669"
+  description: "Pesquisa técnica com timebox para responder uma pergunta"
+
+- name: "type: chore"
+  color: "FEF2C0"
+  description: "Manutenção, dependências, refactor, infra — sem mudança de comportamento"
+
+- name: "type: adr"
+  color: "BFD4F2"
+  description: "Decisão arquitetural que precisa ser avaliada e documentada"
+
+- name: "type: docs"
+  color: "0075CA"
+  description: "Atualização de SPECs, ADRs, READMEs ou prompts"
+
+- name: "type: security"
+  color: "B60205"
+  description: "Vulnerabilidade de segurança ou hardening"
+
+- name: "type: performance"
+  color: "F9D0C4"
+  description: "Melhoria mensurável de desempenho (com número antes/depois)"
+
+# ─────────────────────────────────────────────
+# MODULE — qual parte do sistema é afetada
+# ─────────────────────────────────────────────
+
+- name: "module: auth"
+  color: "C2E0C6"
+  description: "Autenticação, autorização, JWT, refresh token"
+
+- name: "module: accounts"
+  color: "C2E0C6"
+  description: "Contas bancárias — CRUD, saldo, arquivamento"
+
+- name: "module: transactions"
+  color: "C2E0C6"
+  description: "Transações — CRUD manual, extrato, paginação"
+
+- name: "module: imports"
+  color: "C2E0C6"
+  description: "Pipeline de importação — upload, worker, parsers, status"
+
+- name: "module: reports"
+  color: "C2E0C6"
+  description: "Relatórios, dashboard, aggregações e cache de relatório"
+
+- name: "module: rules"
+  color: "C2E0C6"
+  description: "Regras de categorização automática — CRUD e Chain of Responsibility"
+
+- name: "module: categories"
+  color: "C2E0C6"
+  description: "Categorias e metas de orçamento"
+
+- name: "module: worker"
+  color: "C2E0C6"
+  description: "Worker assíncrono — RabbitMQ, processamento de jobs, DLQ"
+
+- name: "module: cache"
+  color: "C2E0C6"
+  description: "Camada de cache Redis — TTL, invalidação, circuit breaker"
+
+- name: "module: db"
+  color: "C2E0C6"
+  description: "Schema Drizzle, migrations, índices, seeds"
+
+- name: "module: frontend"
+  color: "C2E0C6"
+  description: "React, TanStack Query, componentes, páginas"
+
+- name: "module: infra"
+  color: "C2E0C6"
+  description: "Docker, CI/CD, Terraform, Prometheus, Grafana"
+
+- name: "module: observability"
+  color: "C2E0C6"
+  description: "Métricas Prometheus, dashboards Grafana, logs Pino"
+
+# ─────────────────────────────────────────────
+# PRIORITY — urgência e impacto
+# ─────────────────────────────────────────────
+
+- name: "priority: critical"
+  color: "B60205"
+  description: "Sistema indisponível ou perda de dados — atender imediatamente"
+
+- name: "priority: high"
+  color: "E4E669"
+  description: "Bloqueia funcionalidade principal ou outra issue — próxima a ser pega"
+
+- name: "priority: medium"
+  color: "FEF2C0"
+  description: "Importante mas não urgente — entra no próximo ciclo"
+
+- name: "priority: low"
+  color: "E6E6E6"
+  description: "Nice to have — entra quando houver espaço"
+
+- name: "priority: backlog"
+  color: "EEEEEE"
+  description: "Identificado e valorizado mas sem data prevista"
+
+# ─────────────────────────────────────────────
+# STATUS — estado atual de trabalho
+# ─────────────────────────────────────────────
+
+- name: "status: needs-spec"
+  color: "FEF2C0"
+  description: "Issue criada mas ainda sem critérios de aceite definidos — não pode ser iniciada"
+
+- name: "status: ready"
+  color: "0E8A16"
+  description: "Especificada, sem bloqueios — pode ser pega imediatamente"
+
+- name: "status: in-progress"
+  color: "0075CA"
+  description: "Alguém está trabalhando nisso agora"
+
+- name: "status: blocked"
+  color: "B60205"
+  description: "Impedida por dependência externa ou outra issue — descrever no comentário"
+
+- name: "status: needs-review"
+  color: "6F42C1"
+  description: "PR aberto aguardando revisão"
+
+- name: "status: wont-fix"
+  color: "EEEEEE"
+  description: "Decidido que não será implementado — razão documentada na issue"
+
+# ─────────────────────────────────────────────
+# SIZE — esforço estimado
+# (usado para planejamento de capacidade)
+# ─────────────────────────────────────────────
+
+- name: "size: XS"
+  color: "BFD4F2"
+  description: "Menos de 2 horas — mudança trivial"
+
+- name: "size: S"
+  color: "BFD4F2"
+  description: "Meio dia — mudança pequena e bem definida"
+
+- name: "size: M"
+  color: "BFD4F2"
+  description: "1 a 2 dias — feature completa ou refactor moderado"
+
+- name: "size: L"
+  color: "BFD4F2"
+  description: "3 a 5 dias — feature complexa com múltiplas camadas"
+
+- name: "size: XL"
+  color: "BFD4F2"
+  description: "Mais de 1 semana — candidato a ser quebrado em issues menores"
+
+# ─────────────────────────────────────────────
+# RELEASE — qual versão inclui esta issue
+# (atualizar à medida que milestones são criados)
+# ─────────────────────────────────────────────
+
+- name: "release: v0.1.0"
+  color: "1D76DB"
+  description: "Alpha — fundação: auth, contas, transações manuais, banco"
+
+- name: "release: v0.2.0"
+  color: "1D76DB"
+  description: "Alpha — importação: pipeline assíncrono, parsers, categorização"
+
+- name: "release: v0.3.0"
+  color: "1D76DB"
+  description: "Alpha — relatórios: dashboard, cache, relatórios mensais"
+
+- name: "release: v1.0.0"
+  color: "0075CA"
+  description: "MVP completo — todas as funcionalidades core do SPEC-01"
+
+- name: "release: v1.1.0"
+  color: "0075CA"
+  description: "Recorrência: transações recorrentes, parcelas, calendário"
+
+- name: "release: v1.2.0"
+  color: "0075CA"
+  description: "Inteligência: score de saúde, anomalias, tendências"
+
+- name: "release: future"
+  color: "EEEEEE"
+  description: "Identificado mas sem versão definida — Open Finance, colaboração, PWA"
