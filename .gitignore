@@ -1,49 +1,60 @@
-# Dependencies
+# ── Git Ignore (monorepo — arquivo único na raiz) ──────────────
+# Patterns "soltos" (sem /) casam em qualquer profundidade, então
+# um único .gitignore cobre backend/, frontend/, infra/ e demais.
+# A organização por seções segue as mesmas camadas de escopo dos
+# .env (raiz → docker compose; apps → processo Node local).
+
+# ── Dependências (reinstaladas via npm ci) ─────────────────────
 node_modules/
 
-# Build output
+# ── Build output ───────────────────────────────────────────────
 backend/dist/
 frontend/dist/
+*.tsbuildinfo
 
-# Environment files
+# ── Ambiente (ambientes locais — NUNCA versionados) ────────────
+# Escopo dos padrões: qualquer profundidade (.env do compose na
+# raiz, backend/.env, backend/.env.test, etc.).
+# IMPORTANTE: nunca usar padrão .env* — os arquivos *.example
+# (.env.example, .env.test.example) DEVEM permanecer versionados.
 .env
 .env.local
 .env.*.local
 .env.test
-backend/.env
-backend/.env.test
-frontend/.env
-frontend/.env.test
 
-# IDE and editors
+# ── IDE e editores ─────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS files
+# ── OS files ───────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
-# Logs
+# ── Logs e temporários ─────────────────────────────────────────
 *.log
 logs/
+tmp/
+.tmp/
 
-# Uploads
+# ── Testing ────────────────────────────────────────────────────
+coverage/
+
+# ── Uploads (runtime da aplicação) ─────────────────────────────
 backend/uploads/
 
-# Infrastructure
+# ── Terraform — IaC ────────────────────────────────────────────
+# .terraform.lock.hcl deve permanecer VERSIONADO (lock de providers).
+# *.tfvars contém valores sensíveis locais — nunca commitar.
 infra/terraform/.terraform/
 infra/terraform/*.tfstate
 infra/terraform/*.tfstate.backup
+infra/terraform/*.tfvars
 
-# TypeScript
-*.tsbuildinfo
-
-# Testing
-coverage/
-
-# Temporary
-tmp/
-.tmp/
+# ── Ignorados intencionais ─────────────────────────────────────
+# fintrack.wiki/ — fonte da wiki, gerenciada fora do git.
+# Atenção: as ADRs em docs/adrs/ CONTINUAM versionadas — a regra
+# abaixo é específica da wiki, não da pasta docs/.
+fintrack.wiki/
