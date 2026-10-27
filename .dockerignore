@@ -1,8 +1,14 @@
-# ── Docker Ignore (Root Context) ────────────────────────────────
-# Ignora arquivos locais para evitar que sejam enviados ao daemon do Docker,
-# otimizando o cache e acelerando o tempo de build.
+# ── Docker Ignore (contexto de build: raiz do monorepo) ─────────
+# O contexto é a raiz (compose usa `context: .`), então este arquivo
+# ignora tudo que NÃO entra na imagem do build do backend:
+#
+#   Manager (global): fintrack.wiki/, docs/, infra/, .github/
+#   Apps (backend/src entra; mas nada local de ambiente/dev entra)
+#
+# Tudo abaixo é recriado dentro do container via npm ci/tsc, via
+# volume bind em runtime, ou simplesmente não pertence à imagem.
 
-# ── Dependências locais (Devem ser instaladas via npm ci no Docker)
+# ── Dependências locais (instaladas via npm ci no Docker) ──────
 node_modules/
 **/node_modules/
 
@@ -15,7 +21,10 @@ tmp/
 coverage/
 **/coverage/
 
-# ── Arquivos de ambiente e segredos ────────────────────────────
+# ── Arquivos de ambiente (lembrete de escopo) ──────────────────
+# A raiz (.env → docker compose) e os internos (backend/.env →
+# processo Node local) são AMBIENTE LOCAL; a imagem recebe vars
+# exclusivamente do `environment:`/`env_file:` do compose.
 .env
 .env.test
 .env.*
@@ -23,8 +32,9 @@ coverage/
 **/.env.test
 **/.env.*
 
-# ── Controle de versão e IDEs ──────────────────────────────────
+# ── Controle de versão, IDEs e CI/CD ───────────────────────────
 .git/
+.github/
 .vscode/
 .idea/
 *.swp
@@ -34,11 +44,20 @@ coverage/
 *.log
 **/logs/
 
-# ── Arquivos de Testes (Não necessários no runtime de produção)
+# ── Arquivos de testes (nunca entram na imagem de produção) ───
+# O tsconfig.build.json também os exclui da compilação.
+backend/test/
 **/*.test.ts
 **/*.spec.ts
 **/jest.config.mjs
 **/jest.setup.cjs
 
-# ── Diretórios do monorepo não necessários para nenhum build ────
+# ── Infraestrutura ────────────────────────────────────────────
+# Os Dockerfiles ficam em infra/docker/ mas o contexto do build é a
+# raiz; configs de observabilidade chegam aos containers via volume
+# bind do compose, não via COPY na imagem.
+infra/
+
+# ── Documentação e wiki (necessários para nenhum build) ───────
 docs/
+fintrack.wiki/

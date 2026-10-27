@@ -2,7 +2,7 @@ name: fintrack
 
 x-app-build: &app-build
   context: .
-  dockerfile: backend/Dockerfile
+  dockerfile: infra/docker/api.Dockerfile
 
 x-app-common-env: &app-common-env
   DATABASE_URL: ${DATABASE_URL}
@@ -125,7 +125,7 @@ services:
     image: otel/opentelemetry-collector-contrib:latest
     command: ["--config=/etc/otel/otel-collector.yml"]
     volumes:
-      - ./backend/infra/otel/otel-collector.yml:/etc/otel/otel-collector.yml
+      - ./infra/observability/otel/otel-collector.yml:/etc/otel/otel-collector.yml
     ports:
       - "4317:4317"
       - "4318:4318"
@@ -141,7 +141,7 @@ services:
     user: "0"
     command: ["-config.file=/etc/loki/loki.yml"]
     volumes:
-      - ./backend/infra/loki/loki.yml:/etc/loki/loki.yml
+      - ./infra/observability/loki/loki.yml:/etc/loki/loki.yml
       - loki_data:/var/loki
     ports:
       - "3100:3100"
@@ -151,7 +151,7 @@ services:
     image: grafana/promtail:latest
     command: ["-config.file=/etc/promtail/promtail.yml"]
     volumes:
-      - ./backend/infra/promtail/promtail.yml:/etc/promtail/promtail.yml
+      - ./infra/observability/promtail/promtail.yml:/etc/promtail/promtail.yml
       - promtail_data:/var/lib/promtail
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
@@ -165,7 +165,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     volumes:
-      - ./backend/infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
@@ -179,7 +179,7 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: admin
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
-      - ./backend/infra/grafana/provisioning:/etc/grafana/provisioning
+      - ./infra/observability/grafana/provisioning:/etc/grafana/provisioning
       - grafana_data:/var/lib/grafana
     ports:
       - "3001:3000"
@@ -197,7 +197,7 @@ services:
     user: "0"
     command: ["-config.file=/etc/tempo/tempo.yml"]
     volumes:
-      - ./backend/infra/tempo/tempo.yml:/etc/tempo/tempo.yml
+      - ./infra/observability/tempo/tempo.yml:/etc/tempo/tempo.yml
       - tempo_data:/var/tempo
     ports:
       - "3200:3200"
